@@ -157,7 +157,7 @@ int CMainFrame::OnCreate( LPCREATESTRUCT lpCreateStruct )
     }
     else
     {
-        SetTitle( _T( "RCE" ) );
+        SetTitle( _T( "TITLE RCE" ) );
     }
 
     //

@@ -208,7 +208,7 @@ void CClassView::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
     CNodeBase* FindNode;
     ULONG_PTR FindAddress;
 
-    if (nChar == VK_DOWN)
+    if (nChar == VK_DOWN || nChar == 0x53) // "S" Key
     {
         FirstSelected = m_Selected.begin( );
         if (FirstSelected != m_Selected.end( ))
@@ -280,7 +280,7 @@ void CClassView::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
             Invalidate( );
         }
     }
-    else if (nChar == VK_UP)
+    else if (nChar == VK_UP || nChar == 0x5A || nChar == 0x57) // "Z" Key
     {
         FirstSelected = m_Selected.begin( );
         if (FirstSelected != m_Selected.end( ))
@@ -339,6 +339,87 @@ void CClassView::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
 
         m_Selected.clear( );
     }
+    else if (nChar == 0x50) // "P" key
+    {
+        CClassView::ReplaceSelectedWithType(nt_pointer);
+    }
+    else if (nChar == 0x52) // "R" key
+    {
+        CClassView::ReplaceSelectedWithType(nt_hex64);
+    }
+    else if (nChar == 0x46) // "F" key
+    {
+        CClassView::ReplaceSelectedWithType(nt_float);
+    }
+    else if (nChar == 0x44) // "D" key
+    {
+        CClassView::ReplaceSelectedWithType(nt_double);
+    }
+    else if (nChar == 0x49) // "I" key
+    {
+        CClassView::ReplaceSelectedWithType(nt_int32);
+    }
+
+    else if (nChar == VK_F1) {
+        CClassView::OnAddAdd4();
+    }
+    else if (nChar == VK_F2) {
+		CClassView::OnAddAdd8();
+    }
+    else if (nChar == VK_F3) {
+        CClassView::OnAddAdd64();
+    }
+    else if (nChar == VK_F4) {
+		CClassView::OnAddAdd1024();
+    }
+    else if (nChar == VK_F5) {
+        CClassView::OnAddAdd2048();
+    }
+
+    else if ((nChar == '1')) {
+        CClassView::OnInsertInsert4();
+    }
+    else if ((nChar == '2')) {
+        CClassView::OnInsertInsert8();
+    }
+    else if ((nChar == '3')) {
+      CClassView::OnInsertInsert64();
+    }
+    else if ((nChar == '4')) {
+        CClassView::OnInsertInsert1024();
+    }
+    else if ((nChar == '5')) {
+        CClassView::OnInsertInsert2048();
+    }
+
+	else if (nChar == VK_TAB || nChar == VK_SPACE || nChar == VK_RETURN)
+	{
+        for (size_t i = 0; i < m_Hotspots.size(); i++)
+        {
+			bool isSelected = false;
+			for (size_t j = 0; j < m_Selected.size(); j++)
+			{
+				if (m_Hotspots[i].Object == m_Selected[j].Object)
+				{
+					isSelected = true;
+					break;
+				}
+			}
+
+			if (!isSelected)
+				continue;
+
+			if (m_Hotspots[i].Type == HS_OPENCLOSE)
+			{
+				CNodeBase* ObjectHit = static_cast<CNodeBase*>(m_Hotspots[i].Object);
+				ObjectHit->ToggleLevelOpen(m_Hotspots[i].Level);
+
+				Invalidate( FALSE );
+
+			}
+        }
+
+	}
 
     CWnd::OnKeyDown( nChar, nRepCnt, nFlags );
 }
@@ -469,7 +550,7 @@ void CClassView::OnLButtonDown( UINT nFlags, CPoint point )
 
             if (m_Hotspots[i].Type == HS_OPENCLOSE)
             {
-                ObjectHit->ToggleLevelOpen( m_Hotspots[i].Level );
+                 ObjectHit->ToggleLevelOpen( m_Hotspots[i].Level );
             }
 
             if (m_Hotspots[i].Type == HS_CLICK)
@@ -896,20 +977,35 @@ BOOL CClassView::OnEraseBkgnd( CDC* pDC )
     return TRUE;
 }
 
-BOOL CClassView::OnMouseWheel( UINT nFlags, short zDelta, CPoint pt )
+BOOL CClassView::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 {
-    if (m_Scroll.IsWindowVisible( ))
+    if (m_Scroll.IsWindowVisible())
     {
-        if (GetAsyncKeyState( VK_LCONTROL ))
-            m_Scroll.SetScrollPos( m_Scroll.GetScrollPos( ) + ((zDelta < 0) ? 1 : -1) );
+        int scrollPos = m_Scroll.GetScrollPos();
+        int scrollMax = m_Scroll.GetScrollLimit();
+
+        CRect client;
+        GetClientRect(&client);
+        int scrollPage = client.Height() / g_FontHeight - 2;
+
+        if (GetAsyncKeyState(VK_LCONTROL))
+        {
+            scrollPos += (zDelta < 0) ? scrollPage : -scrollPage;
+        }
         else
-            m_Scroll.SetScrollPos( m_Scroll.GetScrollPos( ) - ((int)zDelta / g_FontHeight) );
-        m_Edit.ShowWindow( SW_HIDE );
-        m_ToolTip.ShowWindow( SW_HIDE );
-        Invalidate( );
+        {
+            scrollPos -= ((int)zDelta / g_FontHeight);
+        }
+
+        scrollPos = max(0, min(scrollPos, scrollMax));
+
+        m_Scroll.SetScrollPos(scrollPos);
+        m_Edit.ShowWindow(SW_HIDE);
+        m_ToolTip.ShowWindow(SW_HIDE);
+        Invalidate();
     }
 
-    return CWnd::OnMouseWheel( nFlags, zDelta, pt );
+    return CWnd::OnMouseWheel(nFlags, zDelta, pt);
 }
 
 void CClassView::OnMouseHover( UINT nFlags, CPoint point )

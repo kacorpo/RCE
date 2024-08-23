@@ -103,6 +103,10 @@ NODESIZE CNodePtr::Draw(const PVIEWINFO View, int x, int y)
             }
         }
     }
+	else
+	{
+		tx = AddText(View, tx, y, g_clrOffset, HS_NONE, _T("-> INVALID"));
+	}
 
     tx = AddComment(View, tx, y);
 
