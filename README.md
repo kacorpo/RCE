@@ -1,6 +1,9 @@
 # KA ReClassEx
 
-Pre-compiled: Go inside of BIN folder, map kernel.sys and run RCE64.exe as admin
+Pre-compiled:
+1. Load procexp driver
+2. Map kernel.sys inside of BIN folder
+3. Run RCE64.exe as admin
 
 ## New
 - Kernel driver plugin (RCEPlugin)
