@@ -22,7 +22,7 @@
     <ProjectGuid>{FA80DCEB-16C4-43D1-8451-6EE506D5FF82}</ProjectGuid>
     <RootNamespace>ReClassEx</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <ProjectName>ReClassEx</ProjectName>
+    <ProjectName>RCE</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -32,7 +32,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -40,7 +40,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -48,7 +48,8 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+    <LLVMToolsVersion>13.0.0</LLVMToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -56,7 +57,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Static</UseOfMfc>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -202,12 +203,14 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_AMD64_;_M_AMD64;_X86AMD64_;_WIN64;_M_X64;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_AMD64_;_M_AMD64;_X86AMD64_;_WIN64;_M_X64;_CRT_SECURE_NO_WARNINGS;_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH;WINDOWS_IGNORE_PACKING_MISMATCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(VSInstallDir)DIA SDK\include;$(SolutionDir)scintilla\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -292,7 +295,6 @@
     <None Include="res\icons\matrix.ico" />
     <None Include="res\icons\open.ico" />
     <None Include="res\icons\pointer.ico" />
-    <None Include="res\icons\reclass.png" />
     <None Include="res\icons\right.ico" />
     <None Include="res\icons\signed.ico" />
     <None Include="res\icons\speles_random_ico.ico" />
@@ -369,7 +371,6 @@
     <ClInclude Include="CNodeWord.h" />
     <ClInclude Include="CScintillaEdit.h" />
     <ClInclude Include="CProgressBar.h" />
-    <ClInclude Include="DialogAbout.h" />
     <ClInclude Include="BitArray.h" />
     <ClInclude Include="CClassFrame.h" />
     <ClInclude Include="CClassView.h" />
@@ -400,9 +401,10 @@
     <ClInclude Include="NtDll.h" />
     <ClInclude Include="Native.h" />
     <ClInclude Include="PluginAPI.h" />
+    <ClInclude Include="Resource.h" />
     <ClInclude Include="SymbolReader.h" />
     <ClInclude Include="ReClassEx.h" />
-    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Resource.h.bak" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Symbols.h" />
     <ClInclude Include="targetver.h" />
@@ -451,7 +453,6 @@
     <ClCompile Include="CNodeWord.cpp" />
     <ClCompile Include="CScintillaEdit.cpp" />
     <ClCompile Include="CProgressBar.cpp" />
-    <ClCompile Include="DialogAbout.cpp" />
     <ClCompile Include="DialogClasses.cpp" />
     <ClCompile Include="DialogConsole.cpp" />
     <ClCompile Include="DialogEdit.cpp" />

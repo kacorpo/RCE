@@ -5,9 +5,9 @@
 
 #ifdef _WIN64
 #ifdef _DEBUG
-#pragma comment(lib, "ReClassEx64_dbg.lib")
+#pragma comment(lib, "RCE64_dbg.lib")
 #else
-#pragma comment(lib, "ReClassEx64.lib")
+#pragma comment(lib, "RCE64.lib")
 #endif
 #else
 #ifdef _DEBUG
@@ -47,7 +47,7 @@ typedef HANDLE( PLUGIN_CC *PPLUGIN_OPEN_THREAD_OPERATION )(
 
 //
 // Plugin info structure to be filled in during initialization
-// which is passed back to ReClass to display in the plugins dialog
+// which is passed back to RC to display in the plugins dialog
 //
 typedef DECLSPEC_ALIGN(16) struct _RECLASS_PLUGIN_INFO {
     wchar_t Name[256];      //< Name of the plugin
@@ -94,19 +94,19 @@ PluginSettingsDlg(
 // 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideReadMemoryOperation( 
+RCOverrideReadMemoryOperation( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation 
     );
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideWriteMemoryOperation( 
+RCOverrideWriteMemoryOperation( 
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation 
     );
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideMemoryOperations( 
+RCOverrideMemoryOperations( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation, 
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation 
     );
@@ -114,39 +114,39 @@ ReClassOverrideMemoryOperations(
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveReadMemoryOverride( 
+RCRemoveReadMemoryOverride( 
     VOID 
     );
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveWriteMemoryOverride( 
+RCRemoveWriteMemoryOverride( 
     VOID 
     );
 
 
 BOOL 
 PLUGIN_CC 
-ReClassIsReadMemoryOverriden( 
+RCIsReadMemoryOverriden( 
     VOID 
     );
 
 BOOL 
 PLUGIN_CC 
-ReClassIsWriteMemoryOverriden( 
+RCIsWriteMemoryOverriden( 
     VOID 
     );
 
 
 PPLUGIN_READ_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentReadMemory( 
+RCGetCurrentReadMemory( 
     VOID 
     );
 
 PPLUGIN_WRITE_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentWriteMemory( 
+RCGetCurrentWriteMemory( 
     VOID 
     );
 
@@ -156,19 +156,19 @@ ReClassGetCurrentWriteMemory(
 // 
 BOOL
 PLUGIN_CC
-ReClassOverrideOpenProcessOperation( 
+RCOverrideOpenProcessOperation( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation 
     );
 
 BOOL
 PLUGIN_CC
-ReClassOverrideOpenThreadOperation( 
+RCOverrideOpenThreadOperation( 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation 
     );
 
 BOOL
 PLUGIN_CC
-ReClassOverrideHandleOperations( 
+RCOverrideHandleOperations( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation, 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation 
     );
@@ -176,48 +176,48 @@ ReClassOverrideHandleOperations(
 
 BOOL
 PLUGIN_CC
-ReClassRemoveOpenProcessOverride( 
+RCRemoveOpenProcessOverride( 
     VOID 
     );
 
 BOOL
 PLUGIN_CC
-ReClassRemoveOpenThreadOverride( 
+RCRemoveOpenThreadOverride( 
     VOID 
     );
 
 
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenProcessOverriden( 
+RCIsOpenProcessOverriden( 
     VOID 
     );
 
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenThreadOverriden( 
+RCIsOpenThreadOverriden( 
     VOID 
     );
 
 
 PPLUGIN_OPEN_PROCESS_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenProcess( 
+RCGetCurrentOpenProcess( 
     VOID 
     );
 
 PPLUGIN_OPEN_THREAD_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenThread( 
+RCGetCurrentOpenThread( 
     VOID 
     );
 
 // 
-// Print text to the ReClass console window
+// Print text to the RC console window
 // 
 VOID 
 PLUGIN_CC 
-ReClassPrintConsole( 
+RCPrintConsole( 
     IN const wchar_t *Format, 
     ... 
     );
@@ -227,7 +227,7 @@ ReClassPrintConsole(
 // 
 HANDLE 
 PLUGIN_CC 
-ReClassGetProcessHandle( 
+RCGetProcessHandle( 
     VOID 
     );
 
@@ -236,16 +236,16 @@ ReClassGetProcessHandle(
 // 
 DWORD 
 PLUGIN_CC 
-ReClassGetProcessId( 
+RCGetProcessId( 
     VOID 
     );
 
 // 
-// Return the main window handle for ReClass
+// Return the main window handle for RC
 // 
 HWND 
 PLUGIN_CC 
-ReClassMainWindow( 
+RCMainWindow( 
     VOID 
     );
 
@@ -255,7 +255,7 @@ ReClassMainWindow(
 // 
 CMFCRibbonBar* 
 PLUGIN_CC 
-ReClassRibbonInterface( 
+RCRibbonInterface( 
     VOID 
     );
 #endif

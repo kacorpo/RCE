@@ -1,8 +1,129 @@
 #include "Plugin.h"
 #include "resource.h"
+#include "vmmdll.h"
 
-BOOL gTestPluginState = FALSE;
+BOOL gDMAPluginState = FALSE;
 
+HANDLE g_DeviceHandle = INVALID_HANDLE_VALUE;
+
+typedef enum _REQUEST_TYPE : UINT {
+    WRITE,
+    READ,
+    MAINBASE,
+    PEBBASE,
+    HIDECAPTURE,
+    MOUSEEVENT,
+    HIDEWND,
+    UNHIDEWND,
+    CHANGEAPC,
+    RESTOREAPC,
+    UNLINKWND,
+    LINKWND,
+    SPOOFTIMING
+} REQUEST_TYPE;
+
+typedef struct _REQUEST_DATA {
+    UINT Type;
+    PVOID Arguments;
+    NTSTATUS* Status;
+} REQUEST_DATA, * PREQUEST_DATA;
+
+typedef struct _REQUEST_BASE {
+    DWORD ProcessId;
+    PBYTE* OutAddress;
+} REQUEST_BASE, * PREQUEST_BASE;
+
+typedef struct _REQUEST_READ {
+    DWORD ProcessId;
+    PVOID Dest;
+    PVOID Src;
+    DWORD Size;
+} REQUEST_READ, * PREQUEST_READ;
+
+typedef struct _REQUEST_WRITE {
+    DWORD ProcessId;
+    PVOID Dest;
+    PVOID Src;
+    DWORD Size;
+} REQUEST_WRITE, * PREQUEST_WRITE;
+
+
+const bool SendRequest(UINT type, PVOID args) {
+    REQUEST_DATA req;
+    NTSTATUS status;
+    req.Type = type;
+    req.Arguments = args;
+    req.Status = &status;
+
+    __int64 InBuffer = (__int64)&req;
+    HANDLE OutBuffer = 0;
+    DWORD BytesReturned;
+
+    BOOL ok = DeviceIoControl(g_DeviceHandle, 0x83350050, &InBuffer, 8u, &OutBuffer, 8u, &BytesReturned, 0i64);
+
+	if (!ok) {
+		RCPrintConsole(L"[DMAPlugin] DeviceIoControl failed with error %d\n", GetLastError());
+        
+        return false;
+	}
+
+	return NT_SUCCESS(status);
+}
+
+bool setPrivilege(
+    HANDLE hToken,          // token handle 
+    LPCTSTR lpszPrivilege,  // privilege to enable/disable 
+    BOOL bEnablePrivilege   // to enable or disable privilege
+) {
+    TOKEN_PRIVILEGES tp;
+    LUID luid;
+
+    if (!LookupPrivilegeValue(
+        NULL,            // lookup privilege on local system
+        lpszPrivilege,   // privilege to lookup 
+        &luid)) {        // receives LUID of privilege
+        return FALSE;
+    }
+
+    tp.PrivilegeCount = 1;
+    tp.Privileges[0].Luid = luid;
+    if (bEnablePrivilege) {
+        tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+    }
+    else {
+        tp.Privileges[0].Attributes = 0;
+    }
+
+    if (!AdjustTokenPrivileges(
+        hToken,
+        FALSE,
+        &tp,
+        sizeof(TOKEN_PRIVILEGES),
+        (PTOKEN_PRIVILEGES)NULL,
+        (PDWORD)NULL)) {
+        printf("AdjustTokenPrivileges error: %u\n", GetLastError());
+        return FALSE;
+    }
+
+    if (GetLastError() == ERROR_NOT_ALL_ASSIGNED) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+bool enableSeDebugPrivilege() {
+    HANDLE hToken;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+        return false;
+    }
+
+    if (!setPrivilege(hToken, SE_DEBUG_NAME, TRUE)) {
+        return false;
+    }
+
+    return true;
+}
 
 BOOL 
 PLUGIN_CC 
@@ -10,21 +131,44 @@ PluginInit(
     OUT LPRECLASS_PLUGIN_INFO lpRCInfo 
 )
 {
-    wcscpy_s( lpRCInfo->Name, L"Test Plugin Name" );
-    wcscpy_s( lpRCInfo->Version, L"1.0.0.2" );
-    wcscpy_s( lpRCInfo->About, L"This plugin is a test plugin" );
+    wcscpy_s( lpRCInfo->Name, L"DMA-PluginEx" );
+    wcscpy_s( lpRCInfo->Version, L"1.2.3.5" );
+    wcscpy_s( lpRCInfo->About, L"DMA-PluginEx" );
     lpRCInfo->DialogId = IDD_SETTINGS_DLG;
 
-    if (!ReClassIsReadMemoryOverriden( ) && !ReClassIsWriteMemoryOverriden( ))
-    {
-        if (ReClassOverrideMemoryOperations( ReadCallback, WriteCallback ) == FALSE)
-        {
-            ReClassPrintConsole( L"[TestPlugin] Failed to register read/write callbacks, failing PluginInit" );
-            return FALSE;
-        }
-    }
+	enableSeDebugPrivilege();
 
-    gTestPluginState = TRUE;
+    g_DeviceHandle = CreateFileW((L"\\\\.\\Global\\PROCEXP152"), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+
+    RCPrintConsole(L"[DMAPlugin] g_DeviceHandle: %x", g_DeviceHandle);
+
+	if (g_DeviceHandle == INVALID_HANDLE_VALUE) {
+		RCPrintConsole(L"[DMAPlugin] Failed to open device handle with error %d", GetLastError());
+		return false;
+	}
+
+
+    //LPCSTR szParams[] = { "", "-device", "fpga", "-norefresh" };
+    //bool result = VMMDLL_Initialize(3, (LPSTR*)szParams);
+    //
+    //if (!result) {
+    //    RCPrintConsole(L"[DMAPlugin] Failed to initialize memory process file system in call to vmm.dll!VMMDLL_Initialize (Error: %d)", GetLastError());
+    //    //return false;
+    //}
+    //else {
+    //    RCPrintConsole(L"[DMAPlugin] vmm.dll!VMMDLL_Initialize success");
+    //}
+    
+   if (!RCIsReadMemoryOverriden() && !RCIsWriteMemoryOverriden())
+   {
+       if (RCOverrideMemoryOperations( ReadCallback, WriteCallback ) == FALSE)
+       {
+           RCPrintConsole( L"[DMAPlugin] Failed to register read/write callbacks, failing PluginInit" );
+           return FALSE;
+       }
+   }
+
+    gDMAPluginState = TRUE;
 
     return TRUE;
 }
@@ -38,12 +182,12 @@ PluginStateChange(
     //
     // Update global state variable
     //
-    gTestPluginState = State;
+    gDMAPluginState = State;
 
 
     if (State)
     {
-        ReClassPrintConsole( L"[TestPlugin] Enabled!" );
+        RCPrintConsole( L"[DMAPlugin] Enabled" );
 
         //
         // Nothing for now.
@@ -51,16 +195,16 @@ PluginStateChange(
     }
     else
     {
-        ReClassPrintConsole( L"[TestPlugin] Disabled!" );
+        RCPrintConsole( L"[DMAPlugin] Disabled" );
 
         //
         // Remove our overrides if we're disabling/disabled.
         //
-        if (ReClassGetCurrentReadMemory( ) == &ReadCallback)
-            ReClassRemoveReadMemoryOverride( );
+        if (RCGetCurrentReadMemory( ) == &ReadCallback)
+            RCRemoveReadMemoryOverride( );
 
-        if (ReClassGetCurrentWriteMemory( ) == &WriteCallback)
-            ReClassRemoveWriteMemoryOverride( );
+        if (RCGetCurrentWriteMemory( ) == &WriteCallback)
+            RCRemoveWriteMemoryOverride( );
     }
 }
 
@@ -78,13 +222,13 @@ PluginSettingsDlg(
 
     case WM_INITDIALOG:
     {
-        if (gTestPluginState)
+        if (gDMAPluginState)
         {
             //
             // Apply checkboxes appropriately if we're in anm enabled state.
             //
-            BOOL ReadChecked = (ReClassGetCurrentReadMemory( ) == &ReadCallback) ? BST_CHECKED : BST_UNCHECKED;
-            BOOL WriteChecked = (ReClassGetCurrentWriteMemory( ) == &WriteCallback) ? BST_CHECKED : BST_UNCHECKED;
+            BOOL ReadChecked = (RCGetCurrentReadMemory( ) == &ReadCallback) ? BST_CHECKED : BST_UNCHECKED;
+            BOOL WriteChecked = (RCGetCurrentWriteMemory( ) == &WriteCallback) ? BST_CHECKED : BST_UNCHECKED;
 
             SendMessage( GetDlgItem( hWnd, IDC_CHECK_READ_MEMORY_OVERRIDE ), BM_SETCHECK, MAKEWPARAM( ReadChecked, 0 ), 0 );
             EnableWindow( GetDlgItem( hWnd, IDC_CHECK_READ_MEMORY_OVERRIDE ), TRUE );
@@ -123,26 +267,26 @@ PluginSettingsDlg(
                     //
                     // Make sure the read memory operation is not already overriden.
                     //
-                    if (!ReClassIsReadMemoryOverriden( ))
+                    if (!RCIsReadMemoryOverriden( ))
                     {
-                        ReClassOverrideReadMemoryOperation( &ReadCallback );
+                        RCOverrideReadMemoryOperation( &ReadCallback );
                     }
                     else
                     {
                         //
                         // Make sure it's not us!
                         //
-                        if (ReClassGetCurrentReadMemory( ) != &ReadCallback)
+                        if (RCGetCurrentReadMemory( ) != &ReadCallback)
                         {
                             //
                             // Ask the user whether or not they want to overwrite the other operation.
                             //
-                            if (MessageBoxW( ReClassMainWindow( ),
+                            if (MessageBoxW( RCMainWindow( ),
                                 L"Another plugin has already overriden the read operation.\n"
                                 L"Would you like to overwrite their read override?",
                                 L"Test Plugin", MB_YESNO ) == IDYES)
                             {
-                                ReClassOverrideReadMemoryOperation( &ReadCallback );
+                                RCOverrideReadMemoryOperation( &ReadCallback );
                             }
                             else
                             {
@@ -158,7 +302,7 @@ PluginSettingsDlg(
                             //
                             // This shouldn't happen!
                             //
-                            MessageBoxW( ReClassMainWindow( ), 
+                            MessageBoxW( RCMainWindow( ), 
                                 L"WTF! Plugin memory read operation is already set as the active override!", 
                                 L"Test Plugin", MB_ICONERROR );
                         }
@@ -169,9 +313,9 @@ PluginSettingsDlg(
                     //
                     // Only remove the read memory operation if it's ours!
                     //
-                    if (ReClassGetCurrentReadMemory( ) == &ReadCallback)
+                    if (RCGetCurrentReadMemory( ) == &ReadCallback)
                     {
-                        ReClassRemoveReadMemoryOverride( );
+                        RCRemoveReadMemoryOverride( );
                     }
                 }			
             }
@@ -182,29 +326,29 @@ PluginSettingsDlg(
                     //
                     // Make sure the write memory operation is not already overriden.
                     //
-                    if (!ReClassIsWriteMemoryOverriden( ))
+                    if (!RCIsWriteMemoryOverriden( ))
                     {
                         //
                         // We're all good to set our write memory operation!
                         //
-                        ReClassOverrideWriteMemoryOperation( &WriteCallback );
+                        RCOverrideWriteMemoryOperation( &WriteCallback );
                     }
                     else
                     {
                         //
                         // Make sure it's not us!
                         //
-                        if (ReClassGetCurrentWriteMemory( ) != &WriteCallback)
+                        if (RCGetCurrentWriteMemory( ) != &WriteCallback)
                         {
                             //
                             // Ask the user whether or not they want to overwrite the other operation.
                             //
-                            if (MessageBoxW( ReClassMainWindow( ),
+                            if (MessageBoxW( RCMainWindow( ),
                                 L"Another plugin has already overriden the write operation.\n"
                                 L"Would you like to overwrite their write override?",
                                 L"Test Plugin", MB_YESNO ) == IDYES)
                             {
-                                ReClassOverrideWriteMemoryOperation( &WriteCallback );
+                                RCOverrideWriteMemoryOperation( &WriteCallback );
                             }
                             else
                             {
@@ -220,7 +364,7 @@ PluginSettingsDlg(
                             //
                             // This shouldn't happen!
                             //
-                            MessageBoxW( ReClassMainWindow( ),
+                            MessageBoxW( RCMainWindow( ),
                                 L"WTF! Plugin memory write operation is already set as the active override!",
                                 L"Test Plugin", MB_ICONERROR );
                         }
@@ -231,9 +375,9 @@ PluginSettingsDlg(
                     //
                     // Only remove the read memory operation if it's ours!
                     //
-                    if (ReClassGetCurrentWriteMemory( ) == &WriteCallback)
+                    if (RCGetCurrentWriteMemory( ) == &WriteCallback)
                     {
-                        ReClassRemoveWriteMemoryOverride( );
+                        RCRemoveWriteMemoryOverride( );
                     }
                 }
             }
@@ -260,12 +404,27 @@ WriteCallback(
     OUT PSIZE_T BytesWritten 
 )
 {
-    DWORD OldProtect;
-    HANDLE ProcessHandle = ReClassGetProcessHandle( );
-    VirtualProtectEx( ProcessHandle, (PVOID)Address, Size, PAGE_EXECUTE_READWRITE, &OldProtect );
+    DWORD PID = RCGetProcessId();
+    //if (VMMDLL_MemWrite((DWORD)PID, (ULONG64)Address, (PBYTE)Buffer, Size)) {
+    //    
+    //    return true;
+    //}
+
+    //REQUEST_WRITE req{};
+    //req.ProcessId = PID;
+    //req.Src = (PVOID)Address;
+    //req.Dest = (PVOID)&Buffer;
+    //req.Size = Size;
+    //
+    //return SendRequest(REQUEST_TYPE::WRITE, &req);
+
+    return false;
+
+    /*DWORD OldProtect;
+    VirtualProtectEx(ProcessHandle, (PVOID)Address, Size, PAGE_EXECUTE_READWRITE, &OldProtect);
     BOOL Retval = WriteProcessMemory( ProcessHandle, (PVOID)Address, Buffer, Size, BytesWritten );
     VirtualProtectEx( ProcessHandle, (PVOID)Address, Size, OldProtect, NULL );
-    return Retval;
+    return Retval;*/
 }
 
 BOOL 
@@ -277,9 +436,37 @@ ReadCallback(
     OUT PSIZE_T BytesRead 
 )
 {
-    HANDLE ProcessHandle = ReClassGetProcessHandle( );
-    BOOL Retval = ReadProcessMemory( ProcessHandle, (LPVOID)Address, Buffer, Size, BytesRead );
+    DWORD PID = RCGetProcessId( );
+    //RCPrintConsole(L"[DMAPlugin] Read:");
+    //RCPrintConsole(L"[DMAPlugin] Address: %x %p", Address, Address);
+    //RCPrintConsole(L"[DMAPlugin] Buffer: %x %p", Buffer, Buffer);
+    //RCPrintConsole(L"[DMAPlugin] Size: %x", Size);
+    //RCPrintConsole(L"[DMAPlugin] PID: %d", PID);
+
+    //if (VMMDLL_MemRead((DWORD)PID, (ULONG64)Address, (PBYTE)Buffer, Size)) {
+    //    return true;
+    //}
+    //else {
+	//	SecureZeroMemory(Buffer, Size);
+	//	return false;
+    //}
+
+    REQUEST_READ req;
+    req.ProcessId = PID;
+    req.Src = (PVOID)Address;
+    req.Dest = Buffer;
+    req.Size = Size;
+    
+    bool result = SendRequest(REQUEST_TYPE::READ, &req);
+    
+    if (!result) {
+        SecureZeroMemory(Buffer, Size);
+    }
+    
+    return result;
+
+    /*BOOL Retval = ReadProcessMemory(ProcessHandle, (LPVOID)Address, Buffer, Size, BytesRead);
     if (!Retval)
         ZeroMemory( Buffer, Size );
-    return Retval;
+    return Retval;*/
 }

@@ -37,12 +37,12 @@ BOOL CClassFrame::PreCreateWindow( CREATESTRUCT& cs )
 {
     if (!CMDIChildWndEx::PreCreateWindow( cs ))
         return FALSE;
-
+    
     //
     // Modify the Window class and style
     //
     cs.dwExStyle &= ~WS_EX_CLIENTEDGE;
-    cs.lpszClass = AfxRegisterWndClass( 0 );
+    cs.lpszClass = AfxRegisterWndClass(0);
 
     return TRUE;
 }

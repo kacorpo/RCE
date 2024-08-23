@@ -440,19 +440,19 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
         if (g_bFloat)
         {
             if (flVal > -99999.0 && flVal < 99999.0)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%0.3f)" ), flVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %0.3f" ), flVal );
             else
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%0.3f)" ), 0.0f );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %0.3f" ), 0.0f );
         }
 
         if (g_bInt)
         {
             if (intVal > 0x6FFFFFFF && intVal < 0x7FFFFFFFFFFF)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%I64d|0x%IX)" ), intVal, intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %I64d 0x%IX " ), intVal, intVal );
             else if (intVal == 0)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%I64d)" ), intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %I64d " ), intVal );
             else
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%I64d|0x%X)" ), intVal, intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %I64d 0x%X " ), intVal, intVal );
         }
 
         // *** this is probably broken, let's fix it after
@@ -465,7 +465,7 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
                 //printf( "<%p> here\n", Val );
                 if (uintVal > 0x6FFFFFFF && uintVal < 0x7FFFFFFFFFFF)
                 {
-                    x = AddText( View, x, y, g_clrOffset, HS_EDIT, _T( "*->%s " ), strAddress.GetString( ) );
+                    x = AddText( View, x, y, g_clrOffset, HS_EDIT, _T( "-> %s " ), strAddress.GetString( ) );
                     if (g_bRTTI)
                         x = ResolveRTTI( uintVal, x, View, y );
 
@@ -528,22 +528,22 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
         if (g_bFloat)
         {
             if (flVal > -99999.0 && flVal < 99999.0)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%0.3f)" ), flVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %0.3f" ), flVal );
             else
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%0.3f)" ), 0.0f );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %0.3f" ), 0.0f );
         }
 
         if (g_bInt)
         {
             #if defined(_M_AMD64)
             if (intVal > 0x140000000 && intVal < 0x7FFFFFFFFFFF) // in 64 bit address range
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i|0x%IX)" ), intVal, intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %i 0x%IX " ), intVal, intVal );
             else if (intVal > 0x400000 && intVal < 0x140000000)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i|0x%X)" ), intVal, intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %i 0x%X " ), intVal, intVal );
             else if (intVal == 0)
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i)" ), intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %i " ), intVal );
             else
-                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i|0x%X)" ), intVal, intVal );
+                x = AddText( View, x, y, g_clrValue, HS_NONE, _T( " %i 0x%X " ), intVal, intVal );
             #else
             x = (intVal == 0) ? AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i)" ), intVal ) : AddText( View, x, y, g_clrValue, HS_NONE, _T( "(%i|0x%X)" ), intVal, intVal );
             #endif
@@ -561,7 +561,7 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
                 // Set to 0x110000000 instead
                 if (uintVal > 0x400000 && uintVal < 0x110000000)
                 {
-                    x = AddText( View, x, y, g_clrOffset, HS_EDIT, _T( "*->%s " ), strAddress.GetString( ) );
+                    x = AddText( View, x, y, g_clrOffset, HS_EDIT, _T( "-> %s " ), strAddress.GetString( ) );
                     if (g_bRTTI)
                         x = ResolveRTTI( uintVal, x, View, y );
 

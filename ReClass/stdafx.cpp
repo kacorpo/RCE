@@ -339,90 +339,225 @@ ULONG_PTR GetModuleBaseFromAddress( ULONG_PTR Address )
     return 0;
 }
 
-CString GetAddressName( ULONG_PTR Address, BOOLEAN bJustAddress )
+CString GetSectionName(const MemMapInfo* module, ULONG_PTR Address)
+{
+    if (module == nullptr)
+        return _T("");
+
+    IMAGE_DOS_HEADER dosHeader;
+    if (!ReClassReadMemory((LPVOID)module->Start, &dosHeader, sizeof(IMAGE_DOS_HEADER)))
+        return _T("");
+
+    if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE)
+        return _T("");
+
+    ULONG_PTR ntHeadersAddress = module->Start + dosHeader.e_lfanew;
+    IMAGE_NT_HEADERS ntHeaders;
+    if (!ReClassReadMemory((LPVOID)ntHeadersAddress, &ntHeaders, sizeof(IMAGE_NT_HEADERS)))
+        return _T("");
+
+    if (ntHeaders.Signature != IMAGE_NT_SIGNATURE)
+        return _T("");
+
+    PIMAGE_SECTION_HEADER sectionHeaders = new IMAGE_SECTION_HEADER[ntHeaders.FileHeader.NumberOfSections];
+    ULONG_PTR sectionHeadersAddress = ntHeadersAddress + sizeof(IMAGE_NT_HEADERS);
+    if (!ReClassReadMemory((LPVOID)sectionHeadersAddress, sectionHeaders, sizeof(IMAGE_SECTION_HEADER) * ntHeaders.FileHeader.NumberOfSections))
+    {
+        delete[] sectionHeaders;
+        return _T("");
+    }
+
+	CString sectionName = _T("PE-HEADER");
+    for (int i = 0; i < ntHeaders.FileHeader.NumberOfSections; i++)
+    {
+        ULONG_PTR sectionStart = module->Start + sectionHeaders[i].VirtualAddress;
+        ULONG_PTR sectionEnd = sectionStart + sectionHeaders[i].Misc.VirtualSize;
+
+        if (Address >= sectionStart && Address < sectionEnd)
+        {
+            sectionName = CString((char*)sectionHeaders[i].Name);
+            break;
+        }
+    }
+
+    delete[] sectionHeaders;
+    return sectionName;
+}
+
+CString GetFunctionNameFromExports(const MemMapInfo* module, ULONG_PTR Address)
+{
+    if (module == nullptr)
+        return _T("");
+
+    // Read DOS header
+    IMAGE_DOS_HEADER dosHeader;
+    if (!ReClassReadMemory((LPVOID)module->Start, &dosHeader, sizeof(IMAGE_DOS_HEADER)))
+        return _T("");
+
+    if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE)
+        return _T(""); // Not a valid DOS header
+
+    // Read NT headers
+    ULONG_PTR ntHeadersAddress = module->Start + dosHeader.e_lfanew;
+    IMAGE_NT_HEADERS ntHeaders;
+    if (!ReClassReadMemory((LPVOID)ntHeadersAddress, &ntHeaders, sizeof(IMAGE_NT_HEADERS)))
+        return _T("");
+
+    if (ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress == 0)
+        return _T(""); // No export directory
+
+    // Read export directory
+    ULONG_PTR exportDirRVA = ntHeaders.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    IMAGE_EXPORT_DIRECTORY exportDirectory;
+    if (!ReClassReadMemory((LPVOID)(module->Start + exportDirRVA), &exportDirectory, sizeof(IMAGE_EXPORT_DIRECTORY)))
+        return _T("");
+
+    // Get the RVA of the functions, names, and ordinals
+    ULONG_PTR addressOfFunctions = module->Start + exportDirectory.AddressOfFunctions;
+    ULONG_PTR addressOfNames = module->Start + exportDirectory.AddressOfNames;
+    ULONG_PTR addressOfNameOrdinals = module->Start + exportDirectory.AddressOfNameOrdinals;
+
+    char functionNameBuffer[128] = { 0 };
+
+    // Iterate over the export names to find the function corresponding to the address
+    for (DWORD i = 0; i < exportDirectory.NumberOfNames; i++)
+    {
+        // Get the name ordinal and function address
+        WORD nameOrdinal = 0;
+        if (!ReClassReadMemory((LPVOID)(addressOfNameOrdinals + i * sizeof(WORD)), &nameOrdinal, sizeof(WORD)))
+            continue;
+
+        DWORD funcRVA = 0;
+        if (!ReClassReadMemory((LPVOID)(addressOfFunctions + nameOrdinal * sizeof(DWORD)), &funcRVA, sizeof(DWORD)))
+            continue;
+
+        // Get the function name
+        DWORD nameRVA = 0;
+        if (!ReClassReadMemory((LPVOID)(addressOfNames + i * sizeof(DWORD)), &nameRVA, sizeof(DWORD)))
+            continue;
+
+        if (!ReClassReadMemory((LPVOID)(module->Start + nameRVA), functionNameBuffer, sizeof(functionNameBuffer)))
+            continue;
+
+        // Compare the function RVA with the provided address
+        if ((module->Start + funcRVA) == Address)
+        {
+            return CString(functionNameBuffer); // Return the function name
+        }
+    }
+
+    return _T(""); // No matching function found
+}
+
+CString GetAddressName(ULONG_PTR Address, BOOLEAN bJustAddress)
 {
     CString txt;
     size_t i = 0;
 
-    for (i = 0; i < g_CustomNames.size( ); i++)
+    // Check Custom Names
+    for (i = 0; i < g_CustomNames.size(); i++)
     {
         if (Address == g_CustomNames[i].Address)
         {
-            #ifdef _WIN64
-            txt.Format( _T( "%s.%IX" ), g_CustomNames[i].Name, Address );
-            #else
-            txt.Format( _T( "%s.%X" ), g_CustomNames[i].Name, Address );
-            #endif
+#ifdef _WIN64
+            txt.Format(_T("%s %IX"), g_CustomNames[i].Name, Address);
+#else
+            txt.Format(_T("%s %X"), g_CustomNames[i].Name, Address);
+#endif
             return txt;
         }
     }
 
-    for (i = 0; i < g_Exports.size( ); i++)
+    // Check Exports
+    for (i = 0; i < g_Exports.size(); i++)
     {
         if (Address == g_Exports[i].Address)
         {
-            #ifdef _WIN64
-            txt.Format( _T( "%s.%IX" ), g_Exports[i].Name, Address );
-            #else
-            txt.Format( _T( "%s.%X" ), g_Exports[i].Name, Address );
-            #endif
+#ifdef _WIN64
+            txt.Format(_T("%s %IX"), g_Exports[i].Name, Address);
+#else
+            txt.Format(_T("%s %X"), g_Exports[i].Name, Address);
+#endif
             return txt;
         }
     }
 
-    for (i = 0; i < g_MemMapCode.size( ); i++)
+    // Check Memory Maps
+    for (i = 0; i < g_MemMapCode.size(); i++)
     {
         if ((Address >= g_MemMapCode[i].Start) && (Address <= g_MemMapCode[i].End))
         {
-            #ifdef _WIN64
-            txt.Format( _T( "<CODE>%s.%IX" ), g_MemMapCode[i].Name, Address );
-            #else
-            txt.Format( _T( "<CODE>%s.%X" ), g_MemMapCode[i].Name, Address );
-            #endif
+#ifdef _WIN64
+            txt.Format(_T("<CODE> %s %IX"), g_MemMapCode[i].Name, Address);
+#else
+            txt.Format(_T("<CODE> %s %X"), g_MemMapCode[i].Name, Address);
+#endif
             return txt;
         }
     }
 
-    for (i = 0; i < g_MemMapData.size( ); i++)
+    for (i = 0; i < g_MemMapData.size(); i++)
     {
         if ((Address >= g_MemMapData[i].Start) && (Address <= g_MemMapData[i].End))
         {
-            #ifdef _WIN64
-            txt.Format( _T( "<DATA>%s.%IX" ), g_MemMapData[i].Name, Address );
-            #else
-            txt.Format( _T( "<DATA>%s.%X" ), g_MemMapData[i].Name, Address );
-            #endif
+#ifdef _WIN64
+            txt.Format(_T("<DATA> %s %IX"), g_MemMapData[i].Name, Address);
+#else
+            txt.Format(_T("<DATA> %s %X"), g_MemMapData[i].Name, Address);
+#endif
             return txt;
         }
     }
 
-    const MemMapInfo *module = GetModule(Address);
-    if (module != nullptr) {
-        #ifdef _WIN64
-        txt.Format( _T( "%s.%IX" ), module->Name, Address );
-        #else
-        txt.Format( _T( "%s.%X" ), module->Name, Address );
-        #endif
+    // Locate the module that contains the address
+    const MemMapInfo* module = GetModule(Address);
+    if (module != nullptr)
+    {
+        // Retrieve the section name and the function name from exports
+        CString sectionName = GetSectionName(module, Address);
+        CString functionName = GetFunctionNameFromExports(module, Address);
+
+#ifdef _WIN64
+        if (functionName.IsEmpty())
+        {
+            txt.Format(_T("%s %s %IX"), module->Name, sectionName, Address);
+        }
+        else
+        {
+            txt.Format(_T("%s %s %IX [%s]"), module->Name, sectionName, Address, functionName);
+        }
+#else
+        if (functionName.IsEmpty())
+        {
+            txt.Format(_T("%s %s %X"), module->Name, sectionName, Address);
+        }
+        else
+        {
+            txt.Format(_T("%s %s %X [%s]"), module->Name, sectionName, Address, functionName);
+        }
+#endif
         return txt;
-        
-    }
-    
-    if (IsMemory(Address)) {
-        #ifdef _WIN64
-        txt.Format(_T("%IX"), Address);
-        #else
-        txt.Format(_T("%X"), Address);
-        #endif
-        return txt;        
     }
 
+    // Address belongs to an allocated memory region
+    if (IsMemory(Address))
+    {
+#ifdef _WIN64
+        txt.Format(_T("%IX"), Address);
+#else
+        txt.Format(_T("%X"), Address);
+#endif
+        return txt;
+    }
+
+    // Just the address without additional information
     if (bJustAddress)
     {
-        #ifdef _WIN64
-        txt.Format( _T( "%IX" ), Address );
-        #else
-        txt.Format( _T( "%X" ), Address );
-        #endif
+#ifdef _WIN64
+        txt.Format(_T("%IX"), Address);
+#else
+        txt.Format(_T("%X"), Address);
+#endif
     }
 
     return txt;

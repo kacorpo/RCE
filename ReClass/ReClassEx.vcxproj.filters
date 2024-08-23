@@ -132,9 +132,6 @@
     <None Include="res\icons\pointer.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\icons\reclass.png">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\icons\right.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -167,7 +164,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Resource.h">
+    <ClInclude Include="Resource.h.bak">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Debug.h">
@@ -281,9 +278,6 @@
     <ClInclude Include="NtDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DialogAbout.h">
-      <Filter>Header Files\Dialogs</Filter>
-    </ClInclude>
     <ClInclude Include="DialogClasses.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
@@ -393,6 +387,9 @@
       <Filter>Header Files\Nodes</Filter>
     </ClInclude>
     <ClInclude Include="ClassDependencyGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -524,9 +521,6 @@
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="DialogTypes.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="DialogAbout.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="CNodeFunction.cpp">

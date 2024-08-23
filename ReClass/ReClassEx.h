@@ -4,7 +4,7 @@
 #error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"       // main symbols
+#include "Resource.h"       // main symbols
 
 // Console
 #include "DialogConsole.h"
@@ -68,7 +68,6 @@ public:
     DECLARE_MESSAGE_MAP( )
 
     afx_msg void OnButtonReset( );
-    afx_msg void OnAppAbout( );
     afx_msg void OnFileNew( );
     afx_msg void OnFileOpen( );
     afx_msg void OnFileSave( );

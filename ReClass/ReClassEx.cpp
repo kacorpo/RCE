@@ -12,7 +12,6 @@
 #include "DialogClasses.h"
 #include "DialogModules.h"
 #include "DialogPlugins.h"
-#include "DialogAbout.h"
 
 
 // The one and only CReClassExApp object
@@ -20,13 +19,12 @@ CReClassExApp g_ReClassApp;
 
 // CReClassExApp
 BEGIN_MESSAGE_MAP( CReClassExApp, CWinAppEx )
-    ON_COMMAND( ID_APP_ABOUT, &CReClassExApp::OnAppAbout )
     ON_COMMAND( ID_FILE_NEW, &CReClassExApp::OnFileNew )
     ON_COMMAND( ID_FILE_SAVE, &CReClassExApp::OnFileSave )
     ON_COMMAND( ID_FILE_SAVE_AS, &CReClassExApp::OnFileSaveAs )
     ON_COMMAND( ID_FILE_OPEN, &CReClassExApp::OnFileOpen )
     ON_COMMAND( ID_FILE_OPEN_PDB, &CReClassExApp::OnOpenPdb )
-    ON_COMMAND( ID_RECLASS_PLUGINS, &CReClassExApp::OnButtonPlugins )
+    ON_COMMAND( ID_RC_PLUGINS, &CReClassExApp::OnButtonPlugins )
     ON_COMMAND( ID_BUTTON_NEWCLASS, &CReClassExApp::OnButtonNewClass )
     ON_COMMAND( ID_BUTTON_NOTES, &CReClassExApp::OnButtonNotes )
     ON_COMMAND( ID_BUTTON_SEARCH, &CReClassExApp::OnButtonSearch )
@@ -44,7 +42,7 @@ BEGIN_MESSAGE_MAP( CReClassExApp, CWinAppEx )
     ON_UPDATE_COMMAND_UI( ID_BUTTON_KILL, &CReClassExApp::OnUpdateButtonKill )
     ON_UPDATE_COMMAND_UI( ID_BUTTON_SEARCH, &CReClassExApp::OnUpdateButtonSearch )
     ON_UPDATE_COMMAND_UI( ID_BUTTON_MODULES, &CReClassExApp::OnUpdateButtonModules )
-    ON_UPDATE_COMMAND_UI( ID_RECLASS_PLUGINS, &CReClassExApp::OnUpdateButtonPlugins )
+    ON_UPDATE_COMMAND_UI( ID_RC_PLUGINS, &CReClassExApp::OnUpdateButtonPlugins )
     ON_COMMAND( ID_BUTTON_GENERATE, &CReClassExApp::OnButtonGenerate )
     ON_COMMAND( ID_BUTTON_CLEAN, &CReClassExApp::OnButtonClean )
     ON_UPDATE_COMMAND_UI( ID_BUTTON_CLEAN, &CReClassExApp::OnUpdateButtonClean )
@@ -481,13 +479,6 @@ void CReClassExApp::OnFileNew( )
     CalcOffsets( pClass );
 }
 
-// App command to run the dialog
-void CReClassExApp::OnAppAbout( )
-{
-    CDialogAbout aboutDlg;
-    aboutDlg.DoModal( );
-}
-
 void CReClassExApp::PreLoadState( )
 {
     CString strName;
@@ -766,10 +757,10 @@ void CReClassExApp::SaveXML( TCHAR* FileName )
     XMLDeclaration* decl = XmlDoc.NewDeclaration(/*"xml version = \"1.0\" encoding=\"UTF-8\""*/ );
     XmlDoc.LinkEndChild( decl );
 
-    XMLElement* root = XmlDoc.NewElement( "ReClass" );
+    XMLElement* root = XmlDoc.NewElement( "RC" );
     XmlDoc.LinkEndChild( root );
 
-    XMLComment* comment = XmlDoc.NewComment( "ReClassEx" );
+    XMLComment* comment = XmlDoc.NewComment( "RCE" );
     root->LinkEndChild( comment );
     //---------------------------------------------
     XMLElement* settings = XmlDoc.NewElement( "TypeDef" );
@@ -992,7 +983,7 @@ void CReClassExApp::SaveXML( TCHAR* FileName )
         return;
     }
 
-    PrintOut( _T( "ReClass files saved successfully to \"%s\"" ), FileName ); 
+    PrintOut( _T( "RC files saved successfully to \"%s\"" ), FileName ); 
 }
 
 void CReClassExApp::OnFileSave( )
@@ -1009,8 +1000,8 @@ void CReClassExApp::OnFileSave( )
 
 void CReClassExApp::OnFileSaveAs( )
 {
-    TCHAR Filters[] = _T( "ReClass (*.reclass)|*.reclass|All Files (*.*)|*.*||" );
-    CFileDialog fileDlg( FALSE, _T( "reclass" ), _T( "" ), OFN_HIDEREADONLY, Filters, NULL );
+    TCHAR Filters[] = _T( "RC (*.rc)|*.rc|All Files (*.*)|*.*||" );
+    CFileDialog fileDlg( FALSE, _T( "rc" ), _T( "" ), OFN_HIDEREADONLY, Filters, NULL );
     if (fileDlg.DoModal( ) != IDOK)
         return;
 
@@ -1021,9 +1012,9 @@ void CReClassExApp::OnFileSaveAs( )
 
 void CReClassExApp::OnFileOpen( )
 {
-    TCHAR Filters[] = _T( "ReClass (*.reclass)|*.reclass|All Files (*.*)|*.*||" );
+    TCHAR Filters[] = _T( "RC (*.rc)|*.rc|All Files (*.*)|*.*||" );
     
-    CFileDialog fileDlg( TRUE, _T( "reclass" ), _T( "" ), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, Filters );
+    CFileDialog fileDlg( TRUE, _T( "rc" ), _T( "" ), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY, Filters );
     if (fileDlg.DoModal( ) != IDOK)
         return;
 
@@ -1079,7 +1070,7 @@ void CReClassExApp::OnFileOpen( )
 
     const char* v = XmlCurrentElement->Value( );
 
-    if (_stricmp( v, "ReClass" ) != 0) // The root element value is 'ReClass'
+    if (_stricmp( v, "RC" ) != 0) // The root element value is 'ReClass'
         return; // Not a Reclass file
 
     hRoot = XMLHandle( XmlCurrentElement );
@@ -1280,7 +1271,7 @@ void CReClassExApp::OnFileOpen( )
 void CReClassExApp::OnButtonGenerate( )
 {
     CString strGeneratedText, t;
-    strGeneratedText += _T( "// Generated using ReClassEx\r\n\r\n" );
+    strGeneratedText += _T( "// Generated using RC\r\n\r\n" );
 
     if (!m_strHeader.IsEmpty( ))
         strGeneratedText += m_strHeader + _T( "\r\n\r\n" );
@@ -1607,7 +1598,7 @@ void CReClassExApp::OnButtonGenerate( )
 
         ::CloseClipboard( );
         
-        GetMainWnd( )->MessageBox( _T( "Copied generated code to clipboard" ), _T( "ReClassEx" ), MB_OK | MB_ICONINFORMATION );
+        GetMainWnd( )->MessageBox( _T( "Copied generated code to clipboard" ), _T( "RC" ), MB_OK | MB_ICONINFORMATION );
     }
     else
     {

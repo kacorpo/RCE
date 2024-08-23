@@ -6,7 +6,7 @@
 #include <vector>
 
 //
-// ReClass Plugin Loading and Unloading - Not part of the plugin API.
+// RC Plugin Loading and Unloading - Not part of the plugin API.
 //
 VOID 
 LoadPlugins( 
@@ -19,7 +19,7 @@ UnloadPlugins(
     );
 
 //
-// ReClass Plugin Calling Convention
+// RC Plugin Calling Convention
 //
 #define PLUGIN_CC __stdcall
 
@@ -50,7 +50,7 @@ typedef HANDLE( PLUGIN_CC *PPLUGIN_OPEN_THREAD_OPERATION )(
     );
 
 //
-// Basic ReClass Pugin Information Struct.
+// Basic RC Pugin Information Struct.
 //
 typedef DECLSPEC_ALIGN(16) struct _RECLASS_PLUGIN_INFO {
     wchar_t Name[256];
@@ -86,7 +86,7 @@ typedef VOID( PLUGIN_CC *PPLUGIN_STATE_CHANGE )(
     );
 
 //
-// Defines a ReClass Plugin.
+// Defines a RC Plugin.
 //
 typedef DECLSPEC_ALIGN(16) struct _RECLASS_PLUGIN {
     RECLASS_PLUGIN_INFO Info;
@@ -110,21 +110,21 @@ typedef DECLSPEC_ALIGN(16) struct _RECLASS_PLUGIN {
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideReadMemoryOperation( 
+RCOverrideReadMemoryOperation( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideWriteMemoryOperation( 
+RCOverrideWriteMemoryOperation( 
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideMemoryOperations( 
+RCOverrideMemoryOperations( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation, 
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation 
     );
@@ -133,14 +133,14 @@ ReClassOverrideMemoryOperations(
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassRemoveReadMemoryOverride( 
+RCRemoveReadMemoryOverride( 
     VOID 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassRemoveWriteMemoryOverride( 
+RCRemoveWriteMemoryOverride( 
     VOID 
     );
 
@@ -148,14 +148,14 @@ ReClassRemoveWriteMemoryOverride(
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassIsReadMemoryOverriden( 
+RCIsReadMemoryOverriden( 
     VOID 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassIsWriteMemoryOverriden( 
+RCIsWriteMemoryOverriden( 
     VOID 
     );
 
@@ -163,14 +163,14 @@ ReClassIsWriteMemoryOverriden(
 RECLASS_EXPORT
 PPLUGIN_READ_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentReadMemory( 
+RCGetCurrentReadMemory( 
     VOID 
     );
 
 RECLASS_EXPORT
 PPLUGIN_WRITE_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentWriteMemory( 
+RCGetCurrentWriteMemory( 
     VOID 
     );
 
@@ -181,21 +181,21 @@ ReClassGetCurrentWriteMemory(
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideOpenProcessOperation( 
+RCOverrideOpenProcessOperation( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideOpenThreadOperation( 
+RCOverrideOpenThreadOperation( 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassOverrideHandleOperations( 
+RCOverrideHandleOperations( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation, 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation 
     );
@@ -204,14 +204,14 @@ ReClassOverrideHandleOperations(
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassRemoveOpenProcessOverride( 
+RCRemoveOpenProcessOverride( 
     VOID 
     );
 
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassRemoveOpenThreadOverride( 
+RCRemoveOpenThreadOverride( 
     VOID 
     );
 
@@ -219,14 +219,14 @@ ReClassRemoveOpenThreadOverride(
 RECLASS_EXPORT
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenProcessOverriden( 
+RCIsOpenProcessOverriden( 
     VOID 
     );
 
 RECLASS_EXPORT 
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenThreadOverriden( 
+RCIsOpenThreadOverriden( 
     VOID 
     );
 
@@ -234,14 +234,14 @@ ReClassIsOpenThreadOverriden(
 RECLASS_EXPORT 
 PPLUGIN_OPEN_PROCESS_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenProcess( 
+RCGetCurrentOpenProcess( 
     VOID 
     );
 
 RECLASS_EXPORT 
 PPLUGIN_OPEN_THREAD_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenThread( 
+RCGetCurrentOpenThread( 
     VOID 
     );
 
@@ -252,7 +252,7 @@ ReClassGetCurrentOpenThread(
 RECLASS_EXPORT 
 VOID 
 CDECL // __stdcall can't handle variadic functions 
-ReClassPrintConsole( 
+RCPrintConsole( 
     IN const wchar_t* Format,
     ...
     );
@@ -264,14 +264,14 @@ ReClassPrintConsole(
 RECLASS_EXPORT 
 HANDLE 
 PLUGIN_CC 
-ReClassGetProcessHandle( 
+RCGetProcessHandle( 
     VOID 
     );
 
 RECLASS_EXPORT 
 DWORD 
 PLUGIN_CC 
-ReClassGetProcessId( 
+RCGetProcessId( 
     VOID 
     );
 
@@ -282,14 +282,14 @@ ReClassGetProcessId(
 RECLASS_EXPORT 
 HWND 
 PLUGIN_CC 
-ReClassMainWindow( 
+RCMainWindow( 
     VOID 
     );
 
 RECLASS_EXPORT 
 CMFCRibbonBar* 
 PLUGIN_CC 
-ReClassRibbonInterface( 
+RCRibbonInterface( 
     VOID 
     );
 

@@ -157,7 +157,7 @@ int CMainFrame::OnCreate( LPCREATESTRUCT lpCreateStruct )
     }
     else
     {
-        SetTitle( _T( "ReClassEx" ) );
+        SetTitle( _T( "RCE" ) );
     }
 
     //
@@ -272,7 +272,7 @@ BOOL CMainFrame::PreCreateWindow( CREATESTRUCT& cs )
 {
     if (!CMDIFrameWndEx::PreCreateWindow( cs ))
         return FALSE;
-
+    
     if (g_bTop)
         cs.dwExStyle |= WS_EX_TOPMOST;
 
@@ -532,7 +532,7 @@ void CMainFrame::OnCheckRandomWindowName( )
     } 
     else 
     {
-        SetTitle( _T( "ReClassEx" ) );
+        SetTitle( _T( "RCE" ) );
     }
 
     //

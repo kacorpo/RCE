@@ -59,7 +59,7 @@ LoadPlugins(
             PluginInitFunction = (PPLUGIN_INIT)Utils::GetLocalProcAddress( PluginBase, _T( "PluginInit" ) );
             if (!PluginInitFunction)
             {
-                PrintOut( _T( "%s is not a reclass plugin!" ), strPluginFileName.GetString( ) );
+                PrintOut( _T( "%s is not a RC plugin!" ), strPluginFileName.GetString( ) );
                 FreeLibrary( PluginBase );
                 continue;
             }
@@ -68,7 +68,7 @@ LoadPlugins(
             if (!PluginStateChangeFunction)
             {
                 PrintOut( _T( "%s doesnt have exported state change function! Unable to disable plugin on request, "
-                    "so you must stop reclass and delete the plugin to disable it!" ), strPluginFileName.GetString( ) );
+                    "so you must stop RC and delete the plugin to disable it!" ), strPluginFileName.GetString( ) );
             }
 
             PluginSettingDlgFunction = (DLGPROC)Utils::GetLocalProcAddress( PluginBase, _T( "PluginSettingsDlg" ) );
@@ -130,7 +130,7 @@ UnloadPlugins(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideReadMemoryOperation( 
+RCOverrideReadMemoryOperation( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation 
 )
 {
@@ -144,7 +144,7 @@ ReClassOverrideReadMemoryOperation(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideWriteMemoryOperation( 
+RCOverrideWriteMemoryOperation( 
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation
 )
 {
@@ -158,7 +158,7 @@ ReClassOverrideWriteMemoryOperation(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideMemoryOperations( 
+RCOverrideMemoryOperations( 
     IN PPLUGIN_READ_MEMORY_OPERATION ReadMemoryOperation,
     IN PPLUGIN_WRITE_MEMORY_OPERATION WriteMemoryOperation
 )
@@ -174,7 +174,7 @@ ReClassOverrideMemoryOperations(
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveReadMemoryOverride( 
+RCRemoveReadMemoryOverride( 
     VOID 
 )
 {
@@ -188,7 +188,7 @@ ReClassRemoveReadMemoryOverride(
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveWriteMemoryOverride( 
+RCRemoveWriteMemoryOverride( 
     VOID 
 )
 {
@@ -202,7 +202,7 @@ ReClassRemoveWriteMemoryOverride(
 
 BOOL 
 PLUGIN_CC 
-ReClassIsReadMemoryOverriden( 
+RCIsReadMemoryOverriden( 
     VOID 
 )
 {
@@ -211,7 +211,7 @@ ReClassIsReadMemoryOverriden(
 
 BOOL 
 PLUGIN_CC 
-ReClassIsWriteMemoryOverriden( 
+RCIsWriteMemoryOverriden( 
     VOID 
 )
 {
@@ -220,7 +220,7 @@ ReClassIsWriteMemoryOverriden(
 
 PPLUGIN_READ_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentReadMemory( 
+RCGetCurrentReadMemory( 
     VOID 
 )
 {
@@ -229,7 +229,7 @@ ReClassGetCurrentReadMemory(
 
 PPLUGIN_WRITE_MEMORY_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentWriteMemory( 
+RCGetCurrentWriteMemory( 
     VOID 
 )
 {
@@ -238,7 +238,7 @@ ReClassGetCurrentWriteMemory(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideOpenProcessOperation( 
+RCOverrideOpenProcessOperation( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation 
 )
 {
@@ -252,7 +252,7 @@ ReClassOverrideOpenProcessOperation(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideOpenThreadOperation( 
+RCOverrideOpenThreadOperation( 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation 
 )
 {
@@ -266,7 +266,7 @@ ReClassOverrideOpenThreadOperation(
 
 BOOL 
 PLUGIN_CC 
-ReClassOverrideHandleOperations( 
+RCOverrideHandleOperations( 
     IN PPLUGIN_OPEN_PROCESS_OPERATION OpenProcessOperation, 
     IN PPLUGIN_OPEN_THREAD_OPERATION OpenThreadOperation )
 {
@@ -281,7 +281,7 @@ ReClassOverrideHandleOperations(
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveOpenProcessOverride( 
+RCRemoveOpenProcessOverride( 
     VOID 
 )
 {
@@ -295,7 +295,7 @@ ReClassRemoveOpenProcessOverride(
 
 BOOL 
 PLUGIN_CC 
-ReClassRemoveOpenThreadOverride( 
+RCRemoveOpenThreadOverride( 
     VOID 
 )
 {
@@ -309,7 +309,7 @@ ReClassRemoveOpenThreadOverride(
 
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenProcessOverriden( 
+RCIsOpenProcessOverriden( 
     VOID 
 )
 {
@@ -318,7 +318,7 @@ ReClassIsOpenProcessOverriden(
 
 BOOL 
 PLUGIN_CC 
-ReClassIsOpenThreadOverriden( 
+RCIsOpenThreadOverriden( 
     VOID 
 )
 {
@@ -327,7 +327,7 @@ ReClassIsOpenThreadOverriden(
 
 PPLUGIN_OPEN_PROCESS_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenProcess( 
+RCGetCurrentOpenProcess( 
     VOID 
 )
 {
@@ -336,7 +336,7 @@ ReClassGetCurrentOpenProcess(
 
 PPLUGIN_OPEN_THREAD_OPERATION 
 PLUGIN_CC 
-ReClassGetCurrentOpenThread( 
+RCGetCurrentOpenThread( 
     VOID 
 )
 {
@@ -345,7 +345,7 @@ ReClassGetCurrentOpenThread(
 
 VOID
 CDECL 
-ReClassPrintConsole( 
+RCPrintConsole( 
     IN const wchar_t *Format,
     ...
 )
@@ -361,13 +361,13 @@ ReClassPrintConsole(
     #if defined(_UNICODE)
     g_ReClassApp.m_pConsole->PrintText( Buffer );
     #else
-    g_ReClassApp.m_pConsole->PrintText( CW2A( Buffer ) );
+    g_RCApp.m_pConsole->PrintText( CW2A( Buffer ) );
     #endif
 }
 
 HANDLE 
 PLUGIN_CC 
-ReClassGetProcessHandle( 
+RCGetProcessHandle( 
     VOID 
 )
 {
@@ -376,7 +376,7 @@ ReClassGetProcessHandle(
 
 DWORD 
 PLUGIN_CC 
-ReClassGetProcessId( 
+RCGetProcessId( 
     VOID 
 )
 {
@@ -385,7 +385,7 @@ ReClassGetProcessId(
 
 HWND 
 PLUGIN_CC 
-ReClassMainWindow( 
+RCMainWindow( 
     VOID 
 )
 {
@@ -394,7 +394,7 @@ ReClassMainWindow(
 
 CMFCRibbonBar* 
 PLUGIN_CC 
-ReClassRibbonInterface( 
+RCRibbonInterface( 
     VOID 
 )
 {
