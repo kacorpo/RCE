@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "vmmdll.h"
 
-BOOL gDMAPluginState = FALSE;
+BOOL gPluginState = FALSE;
 
 HANDLE g_DeviceHandle = INVALID_HANDLE_VALUE;
 
@@ -11,15 +11,6 @@ typedef enum _REQUEST_TYPE : UINT {
     READ,
     MAINBASE,
     PEBBASE,
-    HIDECAPTURE,
-    MOUSEEVENT,
-    HIDEWND,
-    UNHIDEWND,
-    CHANGEAPC,
-    RESTOREAPC,
-    UNLINKWND,
-    LINKWND,
-    SPOOFTIMING
 } REQUEST_TYPE;
 
 typedef struct _REQUEST_DATA {
@@ -62,7 +53,7 @@ const bool SendRequest(UINT type, PVOID args) {
     BOOL ok = DeviceIoControl(g_DeviceHandle, 0x83350050, &InBuffer, 8u, &OutBuffer, 8u, &BytesReturned, 0i64);
 
 	if (!ok) {
-		RCPrintConsole(L"[DMAPlugin] DeviceIoControl failed with error %d\n", GetLastError());
+		RCPrintConsole(L"[RCEPlugin] DeviceIoControl failed with error %d\n", GetLastError());
         
         return false;
 	}
@@ -131,19 +122,20 @@ PluginInit(
     OUT LPRECLASS_PLUGIN_INFO lpRCInfo 
 )
 {
-    wcscpy_s( lpRCInfo->Name, L"DMA-PluginEx" );
+    wcscpy_s( lpRCInfo->Name, L"RCEPlugin" );
     wcscpy_s( lpRCInfo->Version, L"1.2.3.5" );
-    wcscpy_s( lpRCInfo->About, L"DMA-PluginEx" );
+    wcscpy_s( lpRCInfo->About, L"PluginEx" );
     lpRCInfo->DialogId = IDD_SETTINGS_DLG;
 
 	enableSeDebugPrivilege();
 
     g_DeviceHandle = CreateFileW((L"\\\\.\\Global\\PROCEXP152"), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
-    RCPrintConsole(L"[DMAPlugin] g_DeviceHandle: %x", g_DeviceHandle);
+    RCPrintConsole(L"[RCEPlugin] g_DeviceHandle: %x", g_DeviceHandle);
 
 	if (g_DeviceHandle == INVALID_HANDLE_VALUE) {
-		RCPrintConsole(L"[DMAPlugin] Failed to open device handle with error %d", GetLastError());
+		RCPrintConsole(L"[RCEPlugin] Failed to open device handle with error %d", GetLastError());
+		MessageBoxW(RCMainWindow(), L"[RCEPlugin] Failed to open device handle!", L"RCEPlugin", MB_ICONERROR);
 		return false;
 	}
 
@@ -152,23 +144,25 @@ PluginInit(
     //bool result = VMMDLL_Initialize(3, (LPSTR*)szParams);
     //
     //if (!result) {
-    //    RCPrintConsole(L"[DMAPlugin] Failed to initialize memory process file system in call to vmm.dll!VMMDLL_Initialize (Error: %d)", GetLastError());
+    //    RCPrintConsole(L"[RCEPlugin] Failed to initialize memory process file system in call to vmm.dll!VMMDLL_Initialize (Error: %d)", GetLastError());
     //    //return false;
     //}
     //else {
-    //    RCPrintConsole(L"[DMAPlugin] vmm.dll!VMMDLL_Initialize success");
+    //    RCPrintConsole(L"[RCEPlugin] vmm.dll!VMMDLL_Initialize success");
     //}
     
    if (!RCIsReadMemoryOverriden() && !RCIsWriteMemoryOverriden())
    {
        if (RCOverrideMemoryOperations( ReadCallback, WriteCallback ) == FALSE)
        {
-           RCPrintConsole( L"[DMAPlugin] Failed to register read/write callbacks, failing PluginInit" );
+           RCPrintConsole( L"[RCEPlugin] Failed to register read/write callbacks, failing PluginInit" );
            return FALSE;
        }
    }
 
-    gDMAPluginState = TRUE;
+   MessageBoxW(RCMainWindow(), L"[RCEPlugin] Loaded successfully!", L"RCEPlugin", MB_ICONINFORMATION);
+
+    gPluginState = TRUE;
 
     return TRUE;
 }
@@ -182,12 +176,12 @@ PluginStateChange(
     //
     // Update global state variable
     //
-    gDMAPluginState = State;
+    gPluginState = State;
 
 
     if (State)
     {
-        RCPrintConsole( L"[DMAPlugin] Enabled" );
+        RCPrintConsole( L"[RCEPlugin] Enabled" );
 
         //
         // Nothing for now.
@@ -195,7 +189,7 @@ PluginStateChange(
     }
     else
     {
-        RCPrintConsole( L"[DMAPlugin] Disabled" );
+        RCPrintConsole( L"[RCEPlugin] Disabled" );
 
         //
         // Remove our overrides if we're disabling/disabled.
@@ -222,7 +216,7 @@ PluginSettingsDlg(
 
     case WM_INITDIALOG:
     {
-        if (gDMAPluginState)
+        if (gPluginState)
         {
             //
             // Apply checkboxes appropriately if we're in anm enabled state.
@@ -437,11 +431,11 @@ ReadCallback(
 )
 {
     DWORD PID = RCGetProcessId( );
-    //RCPrintConsole(L"[DMAPlugin] Read:");
-    //RCPrintConsole(L"[DMAPlugin] Address: %x %p", Address, Address);
-    //RCPrintConsole(L"[DMAPlugin] Buffer: %x %p", Buffer, Buffer);
-    //RCPrintConsole(L"[DMAPlugin] Size: %x", Size);
-    //RCPrintConsole(L"[DMAPlugin] PID: %d", PID);
+    //RCPrintConsole(L"[RCEPlugin] Read:");
+    //RCPrintConsole(L"[RCEPlugin] Address: %x %p", Address, Address);
+    //RCPrintConsole(L"[RCEPlugin] Buffer: %x %p", Buffer, Buffer);
+    //RCPrintConsole(L"[RCEPlugin] Size: %x", Size);
+    //RCPrintConsole(L"[RCEPlugin] PID: %d", PID);
 
     //if (VMMDLL_MemRead((DWORD)PID, (ULONG64)Address, (PBYTE)Buffer, Size)) {
     //    return true;
