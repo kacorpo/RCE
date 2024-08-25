@@ -106,6 +106,11 @@ BOOL CReClassExApp::InitInstance( )
     Utils::CreateDbgConsole( _T( "dbg" ) );
     #endif
 
+	AllocConsole();
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	freopen("CONIN$", "r", stdin);
+
     INITCOMMONCONTROLSEX InitCtrls;
     InitCtrls.dwSize = sizeof( InitCtrls );
     InitCtrls.dwICC = ICC_STANDARD_CLASSES;
@@ -161,7 +166,7 @@ BOOL CReClassExApp::InitInstance( )
     g_clrSelect         = GetProfileInt( _T( "Colors" ), _T( "Select" ), g_clrSelect );
     g_clrHidden         = GetProfileInt( _T( "Colors" ), _T( "Hidden" ), g_clrHidden );
     g_clrOffset         = GetProfileInt( _T( "Colors" ), _T( "Offset" ), g_clrOffset );
-    g_clrAddress        = GetProfileInt( _T( "Colors" ), _T( "Address" ), g_clrAddress );
+    g_clrAddress        = GetProfileInt( _T( "Colors" ), _T( "Address" ), g_clrAddress);
     g_clrType           = GetProfileInt( _T( "Colors" ), _T( "Type" ), g_clrType );
     g_clrName           = GetProfileInt( _T( "Colors" ), _T( "Name" ), g_clrName );
     g_clrIndex          = GetProfileInt( _T( "Colors" ), _T( "Index" ), g_clrIndex );
@@ -174,7 +179,7 @@ BOOL CReClassExApp::InitInstance( )
     g_clrHex            = GetProfileInt( _T( "Colors" ), _T( "Hex" ), g_clrHex );
 
     g_bOffset           = GetProfileInt( _T( "Display" ), _T( "Offset" ), g_bOffset ) > 0 ? true : false;
-    g_bAddress          = GetProfileInt( _T( "Display" ), _T( "Address" ), g_bAddress ) > 0 ? true : false;
+    g_bAddress          = GetProfileInt( _T( "Display" ), _T( "Address" ), g_bAddress) > 0 ? true : false;
     g_bText             = GetProfileInt( _T( "Display" ), _T( "Text" ), g_bText ) > 0 ? true : false;
     g_bFloat            = GetProfileInt( _T( "Display" ), _T( "Float" ), g_bFloat ) > 0 ? true : false;
     g_bInt              = GetProfileInt( _T( "Display" ), _T( "Int" ), g_bInt ) > 0 ? true : false;
@@ -342,7 +347,7 @@ int CReClassExApp::ExitInstance( )
     WriteProfileInt( _T( "Colors" ),    _T( "Select" ),     g_clrSelect );
     WriteProfileInt( _T( "Colors" ),    _T( "Hidden" ),     g_clrHidden );
     WriteProfileInt( _T( "Colors" ),    _T( "Offset" ),     g_clrOffset );
-    WriteProfileInt( _T( "Colors" ),    _T( "Address" ),    g_clrAddress );
+    WriteProfileInt( _T( "Colors" ),    _T( "Address" ),    g_clrAddress);
     WriteProfileInt( _T( "Colors" ),    _T( "Type" ),       g_clrType );
     WriteProfileInt( _T( "Colors" ),    _T( "Name" ),       g_clrName );
     WriteProfileInt( _T( "Colors" ),    _T( "Index" ),      g_clrIndex );
@@ -355,7 +360,7 @@ int CReClassExApp::ExitInstance( )
     WriteProfileInt( _T( "Colors" ),    _T( "Hex" ),        g_clrHex );
 
     WriteProfileInt( _T( "Display" ),   _T( "Offset" ),     g_bOffset );
-    WriteProfileInt( _T( "Display" ),   _T( "Address" ),    g_bAddress );
+    WriteProfileInt( _T( "Display" ),   _T( "Address" ),    g_bAddress);
     WriteProfileInt( _T( "Display" ),   _T( "Text" ),       g_bText );
     WriteProfileInt( _T( "Display" ),   _T( "Float" ),      g_bFloat );
     WriteProfileInt( _T( "Display" ),   _T( "Int" ),        g_bInt );
@@ -385,6 +390,13 @@ void CReClassExApp::OnButtonReset( )
     g_hProcess = NULL;
     g_ProcessID = 0;
     g_AttachedProcessAddress = NULL;
+
+    if (g_UpdateCacheThread)
+    {
+        TerminateThread(g_UpdateCacheThread, 0);
+        CloseHandle(g_UpdateCacheThread);
+        g_UpdateCacheThread = NULL;
+    }
 
     CMDIFrameWnd* pFrame = STATIC_DOWNCAST( CMDIFrameWnd, m_pMainWnd );
     CMDIChildWnd* pChildWnd = pFrame->MDIGetActive( );

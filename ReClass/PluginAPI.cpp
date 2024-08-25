@@ -25,22 +25,15 @@ LoadPlugins(
     PPLUGIN_STATE_CHANGE PluginStateChangeFunction;
     DLGPROC PluginSettingDlgFunction;
 
-    //TCHAR ModulePath[MAX_PATH];
-    //GetModuleFileName( GetModuleHandle( NULL ), ModulePath, MAX_PATH );
+    TCHAR ModulePath[MAX_PATH];
+    GetModuleFileName(GetModuleHandle(NULL), ModulePath, MAX_PATH);
+    PathRemoveFileSpec(ModulePath);
 
-#if defined(_M_AMD64)
-#ifndef _DEBUG
-    FileTreeHandle = FindFirstFile( _T( "plugins\\*.rc-plugin64" ), &FileData );
-#else
-    FileTreeHandle = FindFirstFile( _T( "plugins\\*.rc-plugin64d" ), &FileData );
-#endif
-#else
-#ifndef _DEBUG
-    FileTreeHandle = FindFirstFile( _T( "plugins\\*.rc-plugin" ), &FileData );
-#else
-    FileTreeHandle = FindFirstFile( _T( "plugins\\*.rc-plugind" ), &FileData );
-#endif
-#endif
+    TCHAR PluginPath[MAX_PATH];
+    _stprintf_s(PluginPath, _T("%s\\plugins\\*.rc-plugin64"), ModulePath);
+
+    FileTreeHandle = FindFirstFile(PluginPath, &FileData);
+
     if (FileTreeHandle != INVALID_HANDLE_VALUE)
     {
         do

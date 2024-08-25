@@ -6,7 +6,7 @@
 class CNodeFunctionPtr : public CNodeBase {
 public:
     CNodeFunctionPtr( );
-    CNodeFunctionPtr( CWnd* pParentWindow, ULONG_PTR Address );
+    CNodeFunctionPtr( CWnd* pParentWindow, ULONG_PTR Address);
     ~CNodeFunctionPtr( );
 
     virtual void Update( const PHOTSPOT Spot );
@@ -15,7 +15,7 @@ public:
 
     virtual NODESIZE Draw( const PVIEWINFO View, int x, int y );
 
-    void Initialize( CWnd* pParentWindow, ULONG_PTR Address );
+    void Initialize( CWnd* pParentWindow, ULONG_PTR Address);
 
     inline bool IsInitialized( ) { return (m_pAssemblyWindow != NULL); }
     
@@ -36,7 +36,7 @@ public:
     }
 
 private:
-    void DisassembleBytes( ULONG_PTR Address );
+    void DisassembleBytes( ULONG_PTR Address);
 
 public:
     std::vector<CStringA> m_Assembly;

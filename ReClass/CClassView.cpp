@@ -324,7 +324,7 @@ void CClassView::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
             Invalidate( );
         }
     }
-    else if (nChar == VK_DELETE)
+	else if (nChar == VK_DELETE || nChar == VK_BACK || nChar == VK_ESCAPE)
     {
         for (size_t i = 0; i < m_Selected.size( ); i++)
         {
@@ -339,7 +339,7 @@ void CClassView::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
 
         m_Selected.clear( );
     }
-    else if (nChar == 0x50) // "P" key
+    else if (nChar == 0x50 || nChar == 0x41) // "P" or "A" key
     {
         CClassView::ReplaceSelectedWithType(nt_pointer);
     }
@@ -1055,11 +1055,7 @@ void CClassView::OnMouseHover( UINT nFlags, CPoint point )
                                     ZeroMemory( &MyDisasm, sizeof( DISASM ) );
                                     MyDisasm.EIP = (UIntPtr)Code;
                                     MyDisasm.VirtualAddr = (UInt64)StartAddress;
-                                    #ifdef _WIN64
                                     MyDisasm.Archi = 64;
-                                    #else
-                                    MyDisasm.Archi = 0;
-                                    #endif
                                     MyDisasm.Options = MasmSyntax | PrefixedNumeral | ShowSegmentRegs;
 
                                     // Get assembly lines
@@ -1500,16 +1496,18 @@ void CClassView::InsertBytes( CNodeClass* pClass, UINT Index, DWORD Length )
 
 void CClassView::OnAddAdd4( )
 {
-    if (m_Selected[0].Object->GetType( ) == nt_class)
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object, 4 );
-    }
-    else
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), 4 );
-    }
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        if (m_Selected[0].Object->GetType() == nt_class)
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object, 4);
+        }
+        else
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object->GetParent(), 4);
+        }
 
-    Invalidate( FALSE );
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateAddAdd4( CCmdUI *pCmdUi )
@@ -1527,11 +1525,13 @@ void CClassView::OnUpdateAddAdd4( CCmdUI *pCmdUi )
 
 void CClassView::OnAddAdd8( )
 {
-    if (m_Selected[0].Object->GetType( ) == nt_class)
-        AddBytes( (CNodeClass*)m_Selected[0].Object, 8 );
-    else
-        AddBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), 8 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        if (m_Selected[0].Object->GetType() == nt_class)
+            AddBytes((CNodeClass*)m_Selected[0].Object, 8);
+        else
+            AddBytes((CNodeClass*)m_Selected[0].Object->GetParent(), 8);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateAddAdd8( CCmdUI *pCmdUI )
@@ -1549,11 +1549,13 @@ void CClassView::OnUpdateAddAdd8( CCmdUI *pCmdUI )
 
 void CClassView::OnAddAdd64( )
 {
-    if (m_Selected[0].Object->GetType( ) == nt_class)
-        AddBytes( (CNodeClass*)m_Selected[0].Object, 64 );
-    else
-        AddBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), 64 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        if (m_Selected[0].Object->GetType() == nt_class)
+            AddBytes((CNodeClass*)m_Selected[0].Object, 64);
+        else
+            AddBytes((CNodeClass*)m_Selected[0].Object->GetParent(), 64);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateAddAdd64( CCmdUI *pCmdUI )
@@ -1571,16 +1573,18 @@ void CClassView::OnUpdateAddAdd64( CCmdUI *pCmdUI )
 
 void CClassView::OnAddAdd1024( )
 {
-    if (m_Selected[0].Object->GetType( ) == nt_class)
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object, 1024 );
-    }       
-    else 
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), 1024 );
-    }   
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        if (m_Selected[0].Object->GetType() == nt_class)
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object, 1024);
+        }
+        else
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object->GetParent(), 1024);
+        }
 
-    Invalidate( FALSE );
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateAddAdd1024( CCmdUI *pCmdUI )
@@ -1598,16 +1602,18 @@ void CClassView::OnUpdateAddAdd1024( CCmdUI *pCmdUI )
 
 void CClassView::OnAddAdd2048( )
 {
-    if (m_Selected[0].Object->GetType( ) == nt_class)
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object, 2048 );
-    }   
-    else 
-    {
-        AddBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), 2048 );
-    }
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        if (m_Selected[0].Object->GetType() == nt_class)
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object, 2048);
+        }
+        else
+        {
+            AddBytes((CNodeClass*)m_Selected[0].Object->GetParent(), 2048);
+        }
 
-    Invalidate( FALSE );
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateAddAdd2048( CCmdUI *pCmdUI )
@@ -1620,8 +1626,10 @@ void CClassView::OnUpdateAddAdd2048( CCmdUI *pCmdUI )
 
 void CClassView::OnInsertInsert4( )
 {
-    InsertBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), FindNodeIndex( m_Selected[0].Object ), 4 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        InsertBytes((CNodeClass*)m_Selected[0].Object->GetParent(), FindNodeIndex(m_Selected[0].Object), 4);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateInsertInsert4( CCmdUI *pCmdUI )
@@ -1634,8 +1642,10 @@ void CClassView::OnUpdateInsertInsert4( CCmdUI *pCmdUI )
 
 void CClassView::OnInsertInsert8( )
 {
-    InsertBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), FindNodeIndex( m_Selected[0].Object ), 8 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        InsertBytes((CNodeClass*)m_Selected[0].Object->GetParent(), FindNodeIndex(m_Selected[0].Object), 8);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateInsertInsert8( CCmdUI *pCmdUI )
@@ -1646,10 +1656,12 @@ void CClassView::OnUpdateInsertInsert8( CCmdUI *pCmdUI )
         pCmdUI->Enable( FALSE );
 }
 
-void CClassView::OnInsertInsert64( )
+void CClassView::OnInsertInsert64()
 {
-    InsertBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), FindNodeIndex( m_Selected[0].Object ), 64 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        InsertBytes((CNodeClass*)m_Selected[0].Object->GetParent(), FindNodeIndex(m_Selected[0].Object), 64);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateInsertInsert64( CCmdUI *pCmdUI )
@@ -1662,8 +1674,10 @@ void CClassView::OnUpdateInsertInsert64( CCmdUI *pCmdUI )
 
 void CClassView::OnInsertInsert1024( )
 {
-    InsertBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), FindNodeIndex( m_Selected[0].Object ), 1024 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        InsertBytes((CNodeClass*)m_Selected[0].Object->GetParent(), FindNodeIndex(m_Selected[0].Object), 1024);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateInsertInsert1024( CCmdUI *pCmdUI )
@@ -1674,10 +1688,12 @@ void CClassView::OnUpdateInsertInsert1024( CCmdUI *pCmdUI )
         pCmdUI->Enable( FALSE );
 }
 
-void CClassView::OnInsertInsert2048( )
+void CClassView::OnInsertInsert2048()
 {
-    InsertBytes( (CNodeClass*)m_Selected[0].Object->GetParent( ), FindNodeIndex( m_Selected[0].Object ), 2048 );
-    Invalidate( FALSE );
+    if (!m_Selected.empty() && m_Selected[0].Object != nullptr) {
+        InsertBytes((CNodeClass*)m_Selected[0].Object->GetParent(), FindNodeIndex(m_Selected[0].Object), 2048);
+        Invalidate(FALSE);
+    }
 }
 
 void CClassView::OnUpdateInsertInsert2048( CCmdUI *pCmdUI )

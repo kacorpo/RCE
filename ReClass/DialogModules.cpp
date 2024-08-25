@@ -348,8 +348,8 @@ int CDialogModules::AddData( int Index, LPCTSTR ModuleName, LPCTSTR ModulePath, 
     pos = m_ModuleList.InsertItem( &lvi );
 
     m_ModuleList.SetItemText( pos, COLUMN_PATH, (LPCTSTR)ModulePath );
-    m_ModuleList.SetItemText( pos, COLUMN_START, (LPCTSTR)StartAddress );
-    m_ModuleList.SetItemText( pos, COLUMN_END, (LPCTSTR)EndAddress );
+    m_ModuleList.SetItemText( pos, COLUMN_START, (LPCTSTR)StartAddress);
+    m_ModuleList.SetItemText( pos, COLUMN_END, (LPCTSTR)EndAddress);
     m_ModuleList.SetItemText( pos, COLUMN_SIZE, (LPCTSTR)ModuleSize );
 
     return pos;

@@ -44,7 +44,7 @@ void CNodeFunction::Update( const PHOTSPOT Spot )
     if (Spot->Id == 0)
     {
         // Re-read bytes at specified address
-        DisassembleBytes( Spot->Address );
+        DisassembleBytes( Spot->Address);
     }
 }
 
@@ -113,7 +113,7 @@ NODESIZE CNodeFunction::Draw( const PVIEWINFO View, int x, int y )
     return DrawSize;
 }
 
-void CNodeFunction::Initialize( CClassView* pParentWindow, ULONG_PTR Address )
+void CNodeFunction::Initialize( CClassView* pParentWindow, ULONG_PTR Address)
 {
     if (m_pEdit != NULL)
     {
@@ -151,10 +151,10 @@ void CNodeFunction::Initialize( CClassView* pParentWindow, ULONG_PTR Address )
     m_pEdit->SetMarginWidth( 1, 0 );
 
     // Finally, disassemble the bytes to get the memsize, height, and width
-    DisassembleBytes( Address );
+    DisassembleBytes( Address);
 }
 
-void CNodeFunction::DisassembleBytes( ULONG_PTR Address )
+void CNodeFunction::DisassembleBytes( ULONG_PTR Address)
 {
     ULONG_PTR StartAddress = Address;
     UCHAR Code[2048] = { 0xCC }; // set max function size to 2048 bytes
@@ -184,11 +184,7 @@ void CNodeFunction::DisassembleBytes( ULONG_PTR Address )
         ZeroMemory( &MyDisasm, sizeof( DISASM ) );
         MyDisasm.EIP = (UIntPtr)Code;
         MyDisasm.VirtualAddr = (UInt64)StartAddress;
-        #ifdef _WIN64
         MyDisasm.Archi = 64;
-        #else
-        MyDisasm.Archi = 0;
-        #endif
         MyDisasm.Options = NasmSyntax | PrefixedNumeral | ShowSegmentRegs;
 
         // Get assembly lines

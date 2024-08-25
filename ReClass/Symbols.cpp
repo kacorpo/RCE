@@ -318,10 +318,10 @@ BOOLEAN Symbols::LoadSymbolsForPdb( CString PdbPath )
 //		HeapFree(hHeap, 0, pbi);
 //}
 
-SymbolReader* Symbols::GetSymbolsForModuleAddress( ULONG_PTR ModuleAddress )
+SymbolReader* Symbols::GetSymbolsForModuleAddress( ULONG_PTR ModuleAddress)
 {
     SymbolReader* script = NULL;
-    auto iter = m_SymbolAddresses.find( ModuleAddress );
+    auto iter = m_SymbolAddresses.find( ModuleAddress);
     if (iter != m_SymbolAddresses.end( ))
         script = iter->second;
     return script;

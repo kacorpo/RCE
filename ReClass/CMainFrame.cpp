@@ -30,7 +30,7 @@ BEGIN_MESSAGE_MAP( CMainFrame, CMDIFrameWndEx )
     ON_COMMAND( ID_BUTTON_CLR_SELECT, &CMainFrame::OnButtonClrSelect )
     ON_COMMAND( ID_BUTTON_CLR_HIDDEN, &CMainFrame::OnButtonClrHidden )
     ON_COMMAND( ID_BUTTON_CLR_OFFSET, &CMainFrame::OnButtonClrOffset )
-    ON_COMMAND( ID_BUTTON_CLR_ADDRESS, &CMainFrame::OnButtonClrAddress )
+    ON_COMMAND( ID_BUTTON_CLR_ADDRESS, &CMainFrame::OnButtonClrAddress)
     ON_COMMAND( ID_BUTTON_CLR_HEX, &CMainFrame::OnButtonClrHex )
     ON_COMMAND( ID_BUTTON_CLR_TYPE, &CMainFrame::OnButtonClrType )
     ON_COMMAND( ID_BUTTON_CLR_NAME, &CMainFrame::OnButtonClrName )
@@ -41,8 +41,8 @@ BEGIN_MESSAGE_MAP( CMainFrame, CMDIFrameWndEx )
     ON_COMMAND( ID_BUTTON_CLR_VTABLE, &CMainFrame::OnButtonClrVtable )
     ON_COMMAND( ID_BUTTON_CLR_FUNCTION, &CMainFrame::OnButtonClrFunction )
     ON_COMMAND( ID_BUTTON_CLR_CUSTOM, &CMainFrame::OnButtonClrCustom )
-    ON_COMMAND( ID_CHECK_ADDRESS, &CMainFrame::OnCheckAddress )
-    ON_UPDATE_COMMAND_UI( ID_CHECK_ADDRESS, &CMainFrame::OnUpdateCheckAddress )
+    ON_COMMAND( ID_CHECK_ADDRESS, &CMainFrame::OnCheckAddress)
+    ON_UPDATE_COMMAND_UI( ID_CHECK_ADDRESS, &CMainFrame::OnUpdateCheckAddress)
     ON_COMMAND( ID_CHECK_OFFSET, &CMainFrame::OnCheckOffset )
     ON_UPDATE_COMMAND_UI( ID_CHECK_OFFSET, &CMainFrame::OnUpdateCheckOffset )
     ON_COMMAND( ID_BUTTON_TYPEDEF, &CMainFrame::OnButtonTypedef )
@@ -192,7 +192,7 @@ int CMainFrame::OnCreate( LPCREATESTRUCT lpCreateStruct )
     Color = static_cast<CMFCRibbonColorButton*>(m_RibbonBar.FindByID( ID_BUTTON_CLR_HEX ));         Color->SetColor( g_clrHex );
 
     
-    SetTimer( TIMER_MEMORYMAP_UPDATE, 30, NULL );
+    //SetTimer( TIMER_MEMORYMAP_UPDATE, 30, NULL );
 
     return 0;
 }
@@ -479,7 +479,7 @@ void CMainFrame::OnCheckAddress( )
 
 void CMainFrame::OnUpdateCheckAddress( CCmdUI *pCmdUI )
 {
-    pCmdUI->SetCheck( g_bAddress );
+    pCmdUI->SetCheck( g_bAddress);
 }
 
 void CMainFrame::OnCheckOffset( )
@@ -617,9 +617,9 @@ void CMainFrame::OnUpdateButtonDeleteClass( CCmdUI *pCmdUI )
 
 void CMainFrame::OnTimer( UINT_PTR nIDEvent )
 {
-    if (nIDEvent == TIMER_MEMORYMAP_UPDATE)
-        UpdateMemoryMap( );
-
+    //if (nIDEvent == TIMER_MEMORYMAP_UPDATE)
+    //    UpdateMemoryMap( );
+    
     CMDIFrameWndEx::OnTimer( nIDEvent );
 }
 

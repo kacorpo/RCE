@@ -224,7 +224,7 @@
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
       <AdditionalLibraryDirectories>..\DIA SDK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>BeaEngine_s_stdcall_64.lib;SciLexer_64.lib;Psapi.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BeaEngine_s_stdcall_64.lib;SciLexer_64.lib;Psapi.lib;comctl32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
     </Link>
     <Midl>

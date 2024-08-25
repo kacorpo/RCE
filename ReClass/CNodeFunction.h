@@ -18,10 +18,10 @@ public:
     inline void SetSize( ULONG Size ) { m_dwMemorySize = Size; }
 
     inline bool IsInitialized( ) { return (m_pEdit != NULL); }
-    void Initialize( CClassView* pParentWindow, ULONG_PTR Address );
+    void Initialize( CClassView* pParentWindow, ULONG_PTR Address);
 
 private:
-    void DisassembleBytes( ULONG_PTR Address );
+    void DisassembleBytes( ULONG_PTR Address);
 
 private:
     DWORD m_dwMemorySize;

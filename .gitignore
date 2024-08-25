@@ -26,4 +26,9 @@ $tf*/
 *.tmp
 .vs
 .vs/*
-.vs/
+.vs
+*.obj
+*.iobj
+*.tlog
+*.pdb
+*.exp

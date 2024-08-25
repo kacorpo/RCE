@@ -122,7 +122,6 @@ int CNodeBase::AddAddressOffset( const PVIEWINFO View, int x, int y )
 {
     if (g_bOffset)
     {
-        #ifdef _WIN64
         // goto 722
         // just the left side 0000
         // TODO: fix the ghetto rig FontWidth * x
@@ -135,18 +134,11 @@ int CNodeBase::AddAddressOffset( const PVIEWINFO View, int x, int y )
         //	x += ((numdigits - 8) * FontWidth);
 
         x = AddText( View, x, y, g_clrOffset, HS_NONE, _T( "%0.4X" ), m_Offset ) + g_FontWidth;
-        #else
-        x = AddText( View, x, y, g_clrOffset, HS_NONE, _T( "%0.4X" ), m_Offset ) + g_FontWidth;
-        #endif
     }
 
     if (g_bAddress)
     {
-        #ifdef _WIN64
         x = AddText( View, x, y, g_clrAddress, HS_ADDRESS, _T( "%0.9I64X" ), View->Address + m_Offset ) + g_FontWidth;
-        #else
-        x = AddText( View, x, y, g_clrAddress, HS_ADDRESS, _T( "%0.8X" ), View->Address + m_Offset ) + g_FontWidth;
-        #endif
     }
 
     return x;
@@ -478,7 +470,7 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
                         ModuleAddress = GetModuleBaseFromAddress( uintVal );
                         if (ModuleAddress != 0)
                         {
-                            pSymbols = g_ReClassApp.m_pSymbolLoader->GetSymbolsForModuleAddress( ModuleAddress );
+                            pSymbols = g_ReClassApp.m_pSymbolLoader->GetSymbolsForModuleAddress( ModuleAddress);
                             if (!pSymbols)
                             {
                                 CString moduleName = GetModuleName( uintVal );
@@ -574,7 +566,7 @@ int CNodeBase::AddComment( const PVIEWINFO View, int x, int y )
                         ModuleAddress = GetModuleBaseFromAddress( uintVal );
                         if (ModuleAddress != 0)
                         {
-                            pSymbols = g_ReClassApp.m_pSymbolLoader->GetSymbolsForModuleAddress( ModuleAddress );
+                            pSymbols = g_ReClassApp.m_pSymbolLoader->GetSymbolsForModuleAddress( ModuleAddress);
                             if (!pSymbols)
                             {
                                 CString ModuleName = GetModuleName( uintVal );

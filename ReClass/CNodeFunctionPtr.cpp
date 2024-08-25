@@ -25,10 +25,10 @@ CNodeFunctionPtr::CNodeFunctionPtr( )
     m_strName = _T( "" );
 }
 
-CNodeFunctionPtr::CNodeFunctionPtr( CWnd* pParentWindow, ULONG_PTR Address )
+CNodeFunctionPtr::CNodeFunctionPtr( CWnd* pParentWindow, ULONG_PTR Address)
     : CNodeFunctionPtr( )
 {
-    Initialize( pParentWindow, Address );
+    Initialize( pParentWindow, Address);
 }
 
 CNodeFunctionPtr::~CNodeFunctionPtr( )
@@ -50,7 +50,7 @@ void CNodeFunctionPtr::Update( const PHOTSPOT Spot )
     if (Spot->Id == 0)
     {
         // Re-read bytes at specified address
-        DisassembleBytes( Spot->Address );
+        DisassembleBytes( Spot->Address);
     }
 }
 
@@ -144,7 +144,7 @@ NODESIZE CNodeFunctionPtr::Draw( const PVIEWINFO View, int x, int y )
     return DrawSize;
 }
 
-void CNodeFunctionPtr::Initialize( CWnd* pParentWindow, ULONG_PTR Address )
+void CNodeFunctionPtr::Initialize( CWnd* pParentWindow, ULONG_PTR Address)
 {
     if (m_pAssemblyWindow != NULL)
     {
@@ -182,10 +182,10 @@ void CNodeFunctionPtr::Initialize( CWnd* pParentWindow, ULONG_PTR Address )
     m_pAssemblyWindow->SetMarginWidth( 1, 0 );
 
     // Finally, disassemble the bytes to get the memsize, height, and width
-    DisassembleBytes( Address );
+    DisassembleBytes( Address);
 }
 
-void CNodeFunctionPtr::DisassembleBytes( ULONG_PTR Address )
+void CNodeFunctionPtr::DisassembleBytes( ULONG_PTR Address)
 {
     UCHAR Code[2048] = { 0xCC }; // max function length
     UIntPtr VirtualAddress = Address;
@@ -212,11 +212,7 @@ void CNodeFunctionPtr::DisassembleBytes( ULONG_PTR Address )
         ZeroMemory( &MyDisasm, sizeof( DISASM ) );
         MyDisasm.EIP = (UIntPtr)Code;
         MyDisasm.VirtualAddr = (UInt64)VirtualAddress;
-        #ifdef _WIN64
         MyDisasm.Archi = 64;
-        #else
-        MyDisasm.Archi = 0;
-        #endif
         MyDisasm.Options = MasmSyntax | PrefixedNumeral | ShowSegmentRegs;
 
         // Get assembly lines

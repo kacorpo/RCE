@@ -38,6 +38,7 @@
 //
 #include <map>
 #include <vector>
+#include <mutex>
 
 //
 // BeaEngine disassembler 
@@ -98,13 +99,14 @@ extern DWORD  g_ProcessID;
 extern ULONG_PTR g_AttachedProcessAddress;
 extern DWORD  g_AttachedProcessSize;
 extern CString g_ProcessName;
+extern HANDLE g_UpdateCacheThread;
 
+extern std::mutex g_MemMapMutex;
 extern std::map<ULONG_PTR, struct MemMapInfo> g_MemMap;
-extern std::vector<struct MemMapInfo> g_MemMapCode;
-extern std::vector<struct MemMapInfo> g_MemMapData;
+
+extern std::mutex g_MemMapModulesMutex;
 extern std::map<ULONG_PTR, MemMapInfo> g_MemMapModules;
 extern std::vector<struct AddressName> g_Exports;
-extern std::vector<struct AddressName> g_CustomNames;
 
 extern std::vector<HICON> g_Icons;
 
@@ -219,22 +221,20 @@ extern RCTYPEDEFS g_Typedefs;
 // Global functions
 //
 BOOLEAN PauseResumeThreadList( BOOL bResumeThread );
-void UpdateMemoryMapIncremental();
 BOOLEAN UpdateMemoryMap( );
+void UpdateMemoryMapThread( );
 BOOLEAN UpdateExports( );
 
 ULONG_PTR GetBaseAddress( );
 
-BOOLEAN IsCode( ULONG_PTR Address );
-BOOLEAN IsData( ULONG_PTR Address );
-BOOLEAN IsMemory( ULONG_PTR Address );
-BOOLEAN IsModule( ULONG_PTR Address );
+BOOLEAN IsMemory( ULONG_PTR Address);
+BOOLEAN IsModule( ULONG_PTR Address);
 
 const MemMapInfo* GetModule(ULONG_PTR Address);
-ULONG_PTR GetModuleBaseFromAddress( ULONG_PTR Address );
+ULONG_PTR GetModuleBaseFromAddress( ULONG_PTR Address);
 
-CString GetAddressName( ULONG_PTR Address, BOOLEAN bJustAddress );
-CString GetModuleName( ULONG_PTR Address );
+CString GetAddressName( ULONG_PTR Address, BOOLEAN bJustAddress);
+CString GetModuleName( ULONG_PTR Address);
 ULONG_PTR GetAddressFromName( CString moduleName );
 
 BOOL ReClassReadMemory( LPVOID Address, LPVOID Buffer, SIZE_T Size, PSIZE_T BytesRead = nullptr );
@@ -254,13 +254,28 @@ ULONG_PTR ConvertStrToAddress( CString str );
 //
 #include "CMemory.h"
 
+struct SectionInfo
+{
+    ULONG_PTR Start;
+    ULONG_PTR End;
+    CString Name;
+};
+
+struct ExportInfo
+{
+    ULONG_PTR FunctionRVA;
+    CString FunctionName;
+};
+
 struct MemMapInfo
 {
-    ULONG_PTR  Start;
-    ULONG_PTR  End;
-    DWORD   Size;
+    ULONG_PTR Start;
+    ULONG_PTR End;
+    DWORD Size;
     CString Name;
     CString Path;
+    std::vector<SectionInfo> Sections;
+    std::vector<ExportInfo> Exports;
 };
 
 struct AddressName
@@ -300,7 +315,6 @@ do { \
     } \
 } while (0);\
 }
-#if _DEBUG
 #define PrintOutDbg(fmt, ...) { \
 do { \
     if (fmt) { \
@@ -309,9 +323,6 @@ do { \
     } \
 } while (0);\
 }
-#else
-#define PrintOutDbg(fmt, ...) (void)(fmt)
-#endif
 
 //
 // Plugins

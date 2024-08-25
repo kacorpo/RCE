@@ -19,7 +19,7 @@ public:
     BOOLEAN LoadSymbolsForModule( CString szModulePath, ULONG_PTR ModuleBaseAddress, ULONG SizeOfModule );
     BOOLEAN LoadSymbolsForPdb( CString szPdbPath );
 
-    SymbolReader* GetSymbolsForModuleAddress( ULONG_PTR ModuleAddress );
+    SymbolReader* GetSymbolsForModuleAddress( ULONG_PTR ModuleAddress);
     SymbolReader* GetSymbolsForModuleName( CString ModuleName );
 
 private:

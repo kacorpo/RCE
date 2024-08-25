@@ -80,19 +80,12 @@ UndecorateSymbolNameUnicode(
     DWORD maxStringLength,
     DWORD flags
     );
-#ifdef _UNICODE
+
 #define _UnDecorateSymbolName UndecorateSymbolNameUnicode
-#else
-#define _UnDecorateSymbolName UndecorateSymbolName
-#endif
 
 #define VALID(x) (x != NULL && HIWORD(x))
 
-#ifdef _WIN64
 #define IsValidPtr(Ptr) ((Ptr >= 0x10000) && (Ptr < 0x000F000000000000))
-#else
-#define IsValidPtr(Ptr) ((Ptr >= 0x10000) && (Ptr < 0xFFF00000))
-#endif
 
 #pragma warning(default : 4996)
 

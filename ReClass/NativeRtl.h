@@ -1444,7 +1444,7 @@ typedef PVOID( NTAPI *tRtlAddressInSectionTable )(
     IN ULONG VirtualAddress
     );
 
-typedef PIMAGE_SECTION_HEADER( NTAPI *tRtlSectionTableFromVirtualAddress )(
+typedef PIMAGE_SECTION_HEADER( NTAPI *tRtlSectionTableFromVirtualAddress)(
     IN PIMAGE_NT_HEADERS NtHeaders,
     IN PVOID BaseOfImage,
     IN ULONG VirtualAddress

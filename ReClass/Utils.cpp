@@ -125,7 +125,7 @@ PVOID GetLocalProcAddressA( PVOID ModuleBase, PCHAR ProcName )
                 PVOID ForwardBase = NULL;
 
                 // Duplicate string at address
-                pszForwarder = _strdup( (PCHAR)Address );
+                pszForwarder = _strdup( (PCHAR)Address);
 
                 // Get import name
                 pszImport = strchr( pszForwarder, '.' );
