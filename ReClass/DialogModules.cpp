@@ -128,12 +128,18 @@ BOOL CDialogModules::OnInitDialog( )
 
 inline int CDialogModules::FindModuleByName( const TCHAR* szName )
 {
+    g_MemMapModulesMutex.lock();
+
     for (auto mi : g_MemMapModules)
     {
         MemMapInfo& moduleInfo = mi.second;
-        if (_tcsicmp( moduleInfo.Name, szName ) == 0)
+        if (_tcsicmp(moduleInfo.Name, szName) == 0) {
+            g_MemMapModulesMutex.unlock();
             return mi.first;
+        }
     }
+
+    g_MemMapModulesMutex.unlock();
     return -1;
 }
 

@@ -39,6 +39,7 @@
 #include <map>
 #include <vector>
 #include <mutex>
+#include <shared_mutex>
 
 //
 // BeaEngine disassembler 
@@ -106,6 +107,7 @@ extern std::map<ULONG_PTR, struct MemMapInfo> g_MemMap;
 
 extern std::mutex g_MemMapModulesMutex;
 extern std::map<ULONG_PTR, MemMapInfo> g_MemMapModules;
+
 extern std::vector<struct AddressName> g_Exports;
 
 extern std::vector<HICON> g_Icons;

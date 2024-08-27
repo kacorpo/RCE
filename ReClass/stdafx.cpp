@@ -332,7 +332,6 @@ BOOLEAN PauseResumeThreadList( BOOL bResumeThread )
 
 ULONG_PTR GetBaseAddress( )
 {
-    std::lock_guard<std::mutex> lock(g_MemMapMutex);
     if (g_MemMap.size( ) > 1)
         return g_AttachedProcessAddress;
     return (ULONG_PTR)0x140000000;
@@ -340,12 +339,13 @@ ULONG_PTR GetBaseAddress( )
 
 BOOLEAN IsMemory(ULONG_PTR Address)
 {
-    std::lock_guard<std::mutex> lock(g_MemMapMutex);
+    g_MemMapMutex.lock();
     auto containingBlock = g_MemMap.lower_bound(Address);
-    if (containingBlock != g_MemMap.end()
-        && containingBlock->second.Start <= Address) {
+    if (containingBlock != g_MemMap.end() && containingBlock->second.Start <= Address) {
+        g_MemMapMutex.unlock();
         return true;
     }
+	g_MemMapMutex.unlock();
     return false;
 }
 
@@ -356,24 +356,29 @@ BOOLEAN IsModule( ULONG_PTR Address)
 
 const MemMapInfo* GetModule(ULONG_PTR Address)
 {
-    //std::lock_guard<std::mutex> lock(g_MemMapModulesMutex);
+    g_MemMapModulesMutex.lock();
+
     auto containingModule = g_MemMapModules.lower_bound(Address);
-    if (containingModule != g_MemMapModules.end()
-        && containingModule->second.Start <= Address) {
+    if (containingModule != g_MemMapModules.end() && containingModule->second.Start <= Address) {
+        g_MemMapModulesMutex.unlock();
         return &containingModule->second;
     }    
+
+    g_MemMapModulesMutex.unlock();
     return nullptr;
 }
 
 ULONG_PTR GetModuleBaseFromAddress( ULONG_PTR Address)
 {
-    std::lock_guard<std::mutex> lock(g_MemMapModulesMutex);
+    g_MemMapModulesMutex.lock();
+
     auto containingModule = g_MemMapModules.lower_bound(Address);
-    if (containingModule != g_MemMapModules.end()
-        && containingModule->second.Start <= Address) {
+    if (containingModule != g_MemMapModules.end() && containingModule->second.Start <= Address) {
+        g_MemMapModulesMutex.unlock();
         return containingModule->second.Start;
     }
-    
+
+    g_MemMapModulesMutex.unlock();
     return 0;
 }
 
@@ -468,6 +473,8 @@ CString GetModuleName( ULONG_PTR Address)
 
 ULONG_PTR GetAddressFromName( CString moduleName )
 {
+    g_MemMapModulesMutex.lock();
+
     ULONG_PTR moduleAddress = 0;
     for (auto mi : g_MemMapModules)
     {
@@ -477,6 +484,8 @@ ULONG_PTR GetAddressFromName( CString moduleName )
             break;
         }
     }
+
+    g_MemMapModulesMutex.unlock();
     return moduleAddress;
 }
 
@@ -532,8 +541,9 @@ void UpdateMemoryMapIncremental() {
             // We've exhausted the memory space of the target process. Assign our temp
             // map to the global.
             {
-                std::lock_guard<std::mutex> lock(g_MemMapMutex);
+                g_MemMapMutex.lock();
                 g_MemMap = std::move(memMap);
+                g_MemMapMutex.unlock();
             }
 
             memMap.clear();
@@ -551,16 +561,19 @@ void UpdateMemoryMapIncremental() {
 
 BOOLEAN UpdateMemoryMap(void)
 {
-    std::lock_guard<std::mutex> lock(g_MemMapModulesMutex);
-
-    g_MemMapModules.clear();
     g_Exports.clear();
+
+    std::map<ULONG_PTR, MemMapInfo> temp_MemMapModules;
 
     if (g_hProcess == NULL)
         return FALSE;
 
     if (!IsProcessHandleValid( g_hProcess ))
     {
+        g_MemMapModulesMutex.lock();
+		g_MemMapModules.clear();
+		g_MemMapModulesMutex.unlock();
+
         g_hProcess = NULL;
         return FALSE;
     }
@@ -591,9 +604,6 @@ BOOLEAN UpdateMemoryMap(void)
         ProcessInfo = (PPROCESS_BASIC_INFORMATION)malloc(dwSizeNeeded);
         if (!ProcessInfo)
         {
-#ifdef _DEBUG
-            PrintOut(_T("[UpdateMemoryMap]: Couldn't allocate process info buffer!"));
-#endif
             return FALSE;
         }
 
@@ -604,9 +614,6 @@ BOOLEAN UpdateMemoryMap(void)
     {
         if (!ProcessInfo->PebBaseAddress)
         {
-#ifdef _DEBUG
-            PrintOut(_T("[UpdateMemoryMap]: PEB is null! Aborting UpdateExports!"));
-#endif
             if (ProcessInfo)
                 free(ProcessInfo);
             return false;
@@ -615,9 +622,6 @@ BOOLEAN UpdateMemoryMap(void)
         SIZE_T dwBytesRead = 0;
         if (ReClassReadMemory((LPVOID)ProcessInfo->PebBaseAddress, &Peb, sizeof(PEB), &dwBytesRead) == 0)
         {
-#ifdef _DEBUG
-            PrintOut(_T("[UpdateMemoryMap]: Failed to read PEB! Aborting UpdateExports!"));
-#endif
             if (ProcessInfo)
                 free(ProcessInfo);
             return false;
@@ -626,9 +630,6 @@ BOOLEAN UpdateMemoryMap(void)
         dwBytesRead = 0;
         if (ReClassReadMemory((LPVOID)Peb.Ldr, &LdrData, sizeof(LdrData), &dwBytesRead) == 0)
         {
-#ifdef _DEBUG
-            PrintOut(_T("[UpdateMemoryMap]: Failed to read PEB Ldr Data! Aborting UpdateExports!"));
-#endif
             if (ProcessInfo)
                 free(ProcessInfo);
             return false;
@@ -642,9 +643,6 @@ BOOLEAN UpdateMemoryMap(void)
             dwBytesRead = 0;
             if (!ReClassReadMemory((LPVOID)pLdrCurrentNode, &lstEntry, sizeof(LDR_DATA_TABLE_ENTRY), &dwBytesRead))
             {
-#ifdef _DEBUG
-                PrintOut(_T("[UpdateMemoryMap]: Could not read list entry from LDR list. Error = %s"), Utils::GetLastErrorString().GetString());
-#endif
                 if (ProcessInfo)
                     free(ProcessInfo);
                 return false;
@@ -689,7 +687,7 @@ BOOLEAN UpdateMemoryMap(void)
                 Mem.Size = ModuleSize;
                 Mem.Name = wcsModuleName;
                 Mem.Path = wcsModulePath;
-                g_MemMapModules[Mem.End] = Mem;
+                temp_MemMapModules[Mem.End] = Mem;
 
                 IMAGE_DOS_HEADER DosHdr;
                 IMAGE_NT_HEADERS NtHdr;
@@ -713,7 +711,7 @@ BOOLEAN UpdateMemoryMap(void)
                     sectionInfo.Start = (ULONG_PTR)ModuleBase + sections[i].VirtualAddress;
                     sectionInfo.End = sectionInfo.Start + sections[i].Misc.VirtualSize;
 
-                    g_MemMapModules[Mem.End].Sections.push_back(sectionInfo);
+                    temp_MemMapModules[Mem.End].Sections.push_back(sectionInfo);
                 }
                 free(sections);
 
@@ -745,7 +743,7 @@ BOOLEAN UpdateMemoryMap(void)
                                         if (ReClassReadMemory((LPVOID)(ModuleBase + nameRVA), functionNameBuffer, sizeof(functionNameBuffer)))
                                         {
                                             exportInfo.FunctionName = CString(functionNameBuffer);
-                                            g_MemMapModules[Mem.End].Exports.push_back(exportInfo);
+                                            temp_MemMapModules[Mem.End].Exports.push_back(exportInfo);
                                         }
                                     }
                                 }
@@ -766,6 +764,10 @@ BOOLEAN UpdateMemoryMap(void)
 
     if (ProcessInfo)
         free(ProcessInfo);
+
+    g_MemMapModulesMutex.lock();
+	g_MemMapModules = temp_MemMapModules;
+    g_MemMapModulesMutex.unlock();
 
     return true;
 }
@@ -1015,6 +1017,8 @@ ULONG_PTR ConvertStrToAddress( CString str )
 
         if (bMod)
         {
+            g_MemMapModulesMutex.lock();
+
             for (auto mi : g_MemMapModules)
             {
                 CString ModName = mi.second.Name;
@@ -1026,6 +1030,8 @@ ULONG_PTR ConvertStrToAddress( CString str )
                     break;
                 }
             }
+
+            g_MemMapModulesMutex.unlock();
         }
         else
         {
